@@ -474,6 +474,26 @@ int main() {
         assert(SelfCount::Count() == 56);
         assert(v99[55]() == 0);
     }{
+        // Recentering forward
+        static_deque<int,20> rc;
+        int j = 0;
+        for (unsigned i = 0; i < 5; ++i) {
+            while (rc.size() < 30)
+                rc.push_front(j++);
+            while (20 < rc.size())
+                rc.pop_back();
+        }
+    }{
+        // Recentering backward
+        static_deque<int,20> rc;
+        int j = 0;
+        for (unsigned i = 0; i < 5; ++i) {
+            while (rc.size() < 30)
+                rc.push_back(j++);
+            while (20 < rc.size())
+                rc.pop_front();
+        }
+    }{
         // swap() member
         assert(SelfCount::Count() == 0);
         static_deque<SelfCount, 99> va, vc;

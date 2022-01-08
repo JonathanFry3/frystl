@@ -16,18 +16,21 @@
 // function (operator-()); in those cases, the first element is in
 // the center space and the others follow.
 //
+// The push_... and emplace_... functions recenter the data rather than 
+// overflowing if there is at least one space available at each end.  This 
+// can be a time-consuming operation.
+//
 // The template implements the semantics of std::deque with the following
 // exceptions:
 //      shrink_to_fit() does nothing.
 //      get_allocator(), max_size() are not implemented.
 //      The function data() is added.  Like std::vector::data(), it
-//          returns a pointer to the front of the memory used.
+//          returns a pointer to the front element.  The pointer it
+//          returns can be used like the iterator retured by begin().
 //      
-// Note that this template will not work for implementing queues, even
-// queues that remain quite small, because push_back() moves the end
-// back and pop_front() moves the front back.  After Capacity push_back()
-// calls with no pop_back() calls, the deque will overflow its space
-// even if its size() is much less than its Capacity.
+// Note that this template can work for implementing small queues, 
+// since the push_... and emplace_... functions recenter the data, 
+// but it may be slower than std::deque in that role.
 //
 #ifndef FRYSTL_STATIC_DEQUE
 #define FRYSTL_STATIC_DEQUE
@@ -69,12 +72,8 @@ namespace frystl
         }
         // fill c'tor with default value
         static_deque(size_type count)
-            : _begin(Centered(count)), _end(_begin + count)
-        {
-            FRYSTL_ASSERT(count <= _trueCap);
-            for (pointer p = _begin; p < _end; ++p)
-                new (p) value_type();
-        }
+            : static_deque(count, value_type())
+        {}
         // range c'tor
         template <class Iter,
                   typename = std::_RequireInputIter<Iter>> // TODO: not portable
@@ -152,16 +151,33 @@ namespace frystl
         {
             return _begin == _end;
         }
+private:
+        void Recenter()
+        {
+            size_type sz = size();
+            FRYSTL_ASSERT(sz+2 <= _trueCap);
+            auto begin = Centered(sz);
+            if (begin < _begin) 
+                std::move(_begin,_end,begin);
+            else if  (_begin < begin) 
+                std::move_backward(_begin,_end,begin+sz);
+            _begin = begin;
+            _end = _begin+sz;
+            FRYSTL_ASSERT(FirstSpace()<=_begin && _end<=FirstSpace()+_trueCap);
+        }
+public:
         template <class... Args>
         void emplace_front(Args... args)
         {
-            FRYSTL_ASSERT(FirstSpace() < _begin);
+            if (_begin == FirstSpace()) 
+                Recenter();
             new (_begin - 1) value_type(args...);
             --_begin;
         }
         void push_front(const_reference t)
         {
-            FRYSTL_ASSERT(FirstSpace() < _begin);
+            if (_begin == FirstSpace()) 
+                Recenter();
             new (_begin - 1) value_type(t);
             --_begin;
         }
@@ -174,13 +190,15 @@ namespace frystl
         template <class... Args>
         void emplace_back(Args... args)
         {
-            FRYSTL_ASSERT(_end < FirstSpace() + _trueCap);
+            if (_end == FirstSpace() + _trueCap)
+                Recenter();
             new (_end) value_type(args...);
             ++_end;
         }
         void push_back(const_reference t) noexcept
         {
-            FRYSTL_ASSERT(_end < FirstSpace() + _trueCap);
+            if (_end == FirstSpace() + _trueCap)
+                Recenter();
             new (_end) value_type(t);
             ++_end;
         }
@@ -494,11 +512,15 @@ namespace frystl
         pointer _end;
         storage_type _elem[_trueCap];
 
-        pointer FirstSpace()
+        pointer FirstSpace() noexcept
         {
             return reinterpret_cast<pointer>(_elem);
         }
-        const_pointer Data() const
+        const_pointer FirstSpace() const noexcept
+        {
+            return reinterpret_cast<const_pointer>(_elem);
+        }
+        const_pointer Data() const noexcept
         {
             return reinterpret_cast<const_pointer>(_elem);
         }
@@ -508,7 +530,7 @@ namespace frystl
                 throw std::out_of_range("static_deque range error");
         }
         // returns true iff iter can be dereferenced.
-        bool Dereferencable(const const_iterator &iter)
+        bool Dereferencable(const const_iterator &iter) const noexcept
         {
             return begin() <= iter && iter < end();
         }
@@ -556,7 +578,7 @@ namespace frystl
         }
         // Return a pointer to the front end of a range of n cells centered
         // in the space.
-        constexpr pointer Centered(unsigned n)
+        constexpr pointer Centered(unsigned n) noexcept
         {
             return FirstSpace()+Capacity-1-n/2;
         }
