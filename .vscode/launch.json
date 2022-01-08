@@ -1,0 +1,50 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        /*
+		{
+			"name": "(Windows) Launch test-sd",
+            "type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/test-sd",
+			"args": [],
+			"stopAtEntry": true,
+			"cwd": "${workspaceFolder}",
+			"environment": [],
+			"externalConsole": false,
+            "visualizerFile": "${workspaceFolder}/KSolve.natvis",
+            "showDisplayString": true
+        }
+		{
+			"name": "(Windows) Launch test-sv",
+            "type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/test-sv",
+			"args": [],
+			"stopAtEntry": true,
+			"cwd": "${workspaceFolder}",
+			"environment": [],
+			"externalConsole": false,
+            "visualizerFile": "${workspaceFolder}/KSolve.natvis",
+            "showDisplayString": true
+        }
+        //
+		{
+			"name": "(gdb) Launch test-mfv",
+            "type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/test-mfv",
+			"args": [],
+			"stopAtEntry": true,
+			"cwd": "${workspaceFolder}",
+			"environment": [],
+			"externalConsole": false,
+            "visualizerFile": "${workspaceFolder}/KSolve.natvis",
+            "showDisplayString": true
+        }
+        */
+    ]
+}
