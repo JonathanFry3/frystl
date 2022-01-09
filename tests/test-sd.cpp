@@ -123,7 +123,6 @@ int main() {
         }
         assert(di50.size() == 30);
         
-/*
         // at()
         assert(di50.at(9)() == 9);
         assert(cdi50.at(29)() == 29);
@@ -133,7 +132,6 @@ int main() {
         } 
         catch (std::out_of_range&) {}
         catch (...) {assert(false);}
-*/
 
         // operator[](), back(), front()
         assert(di50[7]() == 7);
@@ -476,22 +474,26 @@ int main() {
     }{
         // Recentering forward
         static_deque<int,20> rc;
-        int j = 0;
+        int j, j2 = 0;
         for (unsigned i = 0; i < 5; ++i) {
             while (rc.size() < 30)
                 rc.push_front(j++);
-            while (20 < rc.size())
+            while (20 < rc.size()) {
+                assert(rc.back() == j2++);
                 rc.pop_back();
+            }
         }
     }{
         // Recentering backward
         static_deque<int,20> rc;
-        int j = 0;
+        int j, j2 = 0;
         for (unsigned i = 0; i < 5; ++i) {
             while (rc.size() < 30)
                 rc.push_back(j++);
-            while (20 < rc.size())
+            while (20 < rc.size()){
+                assert(rc.front() == j2++);
                 rc.pop_front();
+            }
         }
     }{
         // swap() member
