@@ -18,7 +18,8 @@
 //
 // All the operations that add data (push_...(), emplace...(), insert(), 
 // assignments and constructors) avoid overflow if possible by sliding data 
-// away from the end that is being approached. This can be costly.
+// away from the end that is being approached. This can be costly and
+// invalidate iterators, pointers, and references.
 //
 // The template implements the semantics of std::deque with the following
 // exceptions:
@@ -34,8 +35,8 @@
 // that role.
 //
 // Iterators, references, and pointers to elements remain valid 
-// through all operations except erase() unless data are slid 
-// to avoid overflow.
+// through all operations except erase() unless the operation 
+// slides data to avoid overflow.
 //
 #ifndef FRYSTL_STATIC_DEQUE
 #define FRYSTL_STATIC_DEQUE
