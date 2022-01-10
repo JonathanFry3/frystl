@@ -15,6 +15,7 @@
     <DisplayString>{{size = {_end-_begin}}}</DisplayString>
     <Expand>
       <Item Name="[Capacity]">$T2</Item>
+      <Item Name="[empty]">_begin-_elem</Item>
       <ArrayItems>
         <Size>_end-_begin</Size>
         <ValuePointer>_begin</ValuePointer>
@@ -30,8 +31,5 @@
               <ValuePointer>($T1*)_M_impl._M_start</ValuePointer>
           </ArrayItems>
       </Expand>
-  </Type>
-  <Type Name="Card">
-    <DisplayString> {"CDSH"[_suit]} {"A23456789TJQK"[_rank]} </DisplayString>
   </Type>
 </AutoVisualizer>

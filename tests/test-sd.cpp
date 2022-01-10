@@ -489,12 +489,23 @@ int main() {
         int j, j2 = 0;
         for (unsigned i = 0; i < 5; ++i) {
             while (rc.size() < 30)
-                rc.push_back(j++);
+                rc.emplace_back(j++);
             while (20 < rc.size()){
                 assert(rc.front() == j2++);
                 rc.pop_front();
             }
         }
+    }{
+        // emplace() overflow prevention
+        static_deque<int,11> rc;
+        for (unsigned i = 0; i < 10; ++i)
+            rc.push_back(i);
+        for (unsigned i = 0; i < 8; ++i){
+            rc.emplace(rc.begin()+8+i, 93);
+        }
+        assert(rc.size() == 18);
+        assert(rc[16] == 8);
+        assert(rc[15] == 93);
     }{
         // swap() member
         assert(SelfCount::Count() == 0);

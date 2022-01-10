@@ -3,6 +3,8 @@
 
 #ifdef FRYSTL_DEBUG
 #define FRYSTL_ASSERT(assertion) if (!(assertion)) FryStlAssertFailed(#assertion,__FILE__,__LINE__)
+#define FRYSTL_ASSERT2(assertion,description)\
+    if (!(assertion)) FryStlAssertFailed(#assertion " " #description,__FILE__,__LINE__)
 
 #include <cstdio>       // stderr
 #include <csignal>      // raise, SIGABRT
