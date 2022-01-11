@@ -75,7 +75,7 @@
 #include <vector>
 #include <type_traits> // conditional
 #include <initializer_list>
-#include "frystl-assert.hpp"
+#include "frystl-defines.hpp"
 
 namespace frystl
 {
@@ -299,7 +299,7 @@ namespace frystl
         }
         // Range constructors
         template <class InputIt,
-                  typename = std::_RequireInputIter<InputIt>> // TODO: not portable
+                  typename = RequireInputIter<InputIt>> 
         mf_vector(InputIt first, InputIt last)
             : mf_vector()
         {
@@ -474,7 +474,7 @@ namespace frystl
                 push_back(a);
         }
         template <class InputIterator,
-                  typename = std::_RequireInputIter<InputIterator>> // TODO: not portable
+                  typename = RequireInputIter<InputIterator>> 
         void assign(InputIterator begin, InputIterator end)
         {
             clear();

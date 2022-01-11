@@ -17,7 +17,7 @@
 #include <algorithm> // for std::move...(), equal(), lexicographical_compare()
 #include <initializer_list>
 #include <stdexcept> // for std::out_of_range
-#include "frystl-assert.hpp"
+#include "frystl-defines.hpp"
 
 namespace frystl
 {
@@ -81,7 +81,7 @@ namespace frystl
         static_vector(size_type n) : static_vector(n, T()) {}
         // range constructor
         template <class InputIterator,
-                  typename = std::_RequireInputIter<InputIterator>> // TODO: not portable
+                  typename = RequireInputIter<InputIterator>>
         static_vector(InputIterator begin, InputIterator end) : _size(0)
         {
             for (InputIterator k = begin; k != end; ++k)
@@ -111,7 +111,7 @@ namespace frystl
                 push_back(a);
         }
         template <class InputIterator,
-                  typename = std::_RequireInputIter<InputIterator>> // TODO: not portable
+                  typename = RequireInputIter<InputIterator>> 
         void assign(InputIterator begin, InputIterator end)
         {
             clear();
