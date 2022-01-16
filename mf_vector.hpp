@@ -393,7 +393,7 @@ namespace frystl
         }
         void pop_back() noexcept
         {
-            FRYSTL_ASSERT(_size);
+            FRYSTL_ASSERT2(_size,"mf_vector::pop_back() on empty vector");
             iterator e = end() - 1;
             e->~T(); //destruct
             _size -= 1;
@@ -410,12 +410,12 @@ namespace frystl
         }
         reference front() noexcept
         {
-            FRYSTL_ASSERT(_size);
+            FRYSTL_ASSERT2(_size,"mf_vector::front() on empty vector");
             return **_blocks.data();
         }
         const_reference front() const noexcept
         {
-            FRYSTL_ASSERT(_size);
+            FRYSTL_ASSERT2(_size,"mf_vector::front() on empty vector");
             return **_blocks.data();
         }
 
@@ -431,12 +431,12 @@ namespace frystl
         }
         reference operator[](size_type index) noexcept
         {
-            FRYSTL_ASSERT(index < _size);
+            FRYSTL_ASSERT2(index < _size,"mf_vector::front() on empty vector");
             return *(_blocks[index / BlockSize] + index % BlockSize);
         }
         const_reference operator[](size_type index) const noexcept
         {
-            FRYSTL_ASSERT(index < _size);
+            FRYSTL_ASSERT2(index < _size,"mf_vector::front() on empty vector");
             return *(_blocks[index / BlockSize] + index % BlockSize);
         }
         iterator erase(const_iterator first, const_iterator last) noexcept
@@ -647,7 +647,6 @@ namespace frystl
         // Grow capacity to newSize..
         void Grow(size_type newSize)
         {
-            FRYSTL_ASSERT(newSize);
             while ((_blocks.size() - 1) * _blockSize < newSize)
             {
                 pointer b = reinterpret_cast<pointer>(new storage_type[_blockSize]);
@@ -669,7 +668,8 @@ namespace frystl
                 } while (_size + _blockSize <= cap);
                 _blocks.back() = ender;
             }
-            FRYSTL_ASSERT((_size + _blockSize - 1) / _blockSize + 1 == _blocks.size());
+            FRYSTL_ASSERT2((_size + _blockSize - 1) / _blockSize + 1 == _blocks.size(),
+                "mf_vector: internal error in Shrink()");
         }
         // Make n spaces available starting at pos.  Shift
         // all elements at and after pos right by n spaces.
