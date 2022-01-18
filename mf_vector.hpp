@@ -9,10 +9,13 @@
 // It's functions have the same semantics as those of std::vector with the
 // following exceptions:
 //
-//  (1) shrink_to_fit(), data(), max_size(), get_allocator(), 
-//      and reserve() are not implemented.
+//  (1) shrink_to_fit(), data(), max_size(), and get_allocator(), 
+//      are not implemented.
 //  (2) capacity() returns the number of elements the mf_vector can store
 //      without reallocating the std::vector of block pointers.
+//  (3) If capacity() < reserve(n), reserve(n) reallocates the std::vector
+//      of blocks to allow space for n elements with further reallocation.
+//      It does not create additional blocks or modify existing blocks.
 //  (3) the function block_size() returns the value of the B parameter.
 //
 // Performance: Generally similar to std::deque.
@@ -355,6 +358,12 @@ namespace frystl
         ~mf_vector() noexcept
         {
             clear();
+        }
+
+        void reserve(size_type newCap)
+        {
+            size_type nBlocks = QuotientRoundedUp(newCap, BlockSize);
+            _blocks.reserve(nBlocks+1);
         }
         size_type size() const noexcept
         {

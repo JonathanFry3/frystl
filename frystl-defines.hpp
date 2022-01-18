@@ -26,12 +26,18 @@ namespace frystl {
 #include <iterator>             // iterator_traits, input_iterator_tag
 
 namespace frystl {
+    
     // Stolen from gcc stl:
     template<typename InIter>
     using RequireInputIter = typename
     std::enable_if<std::is_convertible<
         typename std::iterator_traits<InIter>::iterator_category,
         std::input_iterator_tag>::value>::type;
+
+    static size_t QuotientRoundedUp(size_t num, size_t denom)
+    {
+        return (num+denom-1)/denom;
+    }
 }
 
 #endif  // ndef FRYSTL_DEFINES_H
