@@ -252,7 +252,7 @@ namespace frystl
     typename MFV_Iterator<T, C1>::difference_type
     operator-(const MFV_Iterator<T, C1>& a, const MFV_Iterator<T, C2>& b)
     {
-        return (b._block - a._block - 1) * (a._last - a._first)
+        return (a._block - b._block - 1) * (a._last - a._first)
             + (a._current - a._first) + (b._last - b._current);
     }
 
@@ -382,14 +382,13 @@ namespace frystl
         {
             Grow(_size + 1);
             iterator e = End();
-            new (e._current) value_type(args...);
+            new (e.operator->()) value_type(args...);
             ++_size;
         }
         template <class... Args>
         iterator emplace(const_iterator position, Args... args)
         {
-            iterator pos = MakeIterator(position);
-            MakeRoom(pos, 1);
+            iterator pos = MakeRoom(position,1);
             new (pos.operator->()) T(args...);
             return pos;
         }
@@ -538,8 +537,7 @@ namespace frystl
         // fill insert()
         iterator insert(const_iterator position, size_type n, const value_type& val)
         {
-            iterator p = MakeIterator(position);
-            MakeRoom(p, n);
+            iterator p = MakeRoom(position,n);
             // copy val n times into newly available cells
             for (iterator i = p; i < p + n; ++i)
             {
@@ -562,8 +560,7 @@ namespace frystl
         {
             // Requires begin()<=position && position<=end()
             size_type n = il.size();
-            iterator p = MakeIterator(position);
-            MakeRoom(p, n);
+            iterator p = MakeRoom(position,n);
             // copy il into newly available cells
             auto j = il.begin();
             for (iterator i = p; i < p + n; ++i, ++j)
@@ -654,6 +651,7 @@ namespace frystl
         size_type _size;
 
         // Grow capacity to newSize..
+        // Invalidates iterators.
         void Grow(size_type newSize)
         {
             while ((_blocks.size() - 1) * _blockSize < newSize)
@@ -683,12 +681,21 @@ namespace frystl
         // Make n spaces available starting at pos.  Shift
         // all elements at and after pos right by n spaces.
         // Updates _size.
-        void MakeRoom(iterator pos, size_type n)
+        iterator MakeRoom(const_iterator pos, size_type n)
         {
-            iterator oldEnd = end();
-            Grow(_size + n);
-            std::move_backward(pos, oldEnd, begin()+_size + n);
+            size_type index = pos - begin();
+            size_type nu = std::min(size()-index, n);
+            Grow(_size + n);    // invalidates iterators
+            iterator result = begin()+index;
+            // fill the uninitialized target cells by move construction
+            iterator from = end() - nu;
+            iterator to = from + n;
+            for (size_type i = 0; i < nu; ++i)
+                new ((to++).operator->()) value_type(std::move(*(from++)));
+            // shift elements to previously occupied cells by move assignment
+            std::move_backward(result, end() - nu, end());
             _size += n;
+            return result;
         }
         void MovePushBack(T&& value)
         {

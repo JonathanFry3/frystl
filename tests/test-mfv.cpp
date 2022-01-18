@@ -9,8 +9,9 @@
 using namespace frystl;
 
 // Test fill insert.
-// Assumes vec is a static_vector of type SelfCount
+// Assumes vec is a vector of type SelfCount
 // such that vec[i]() == i for all vec[i].
+// Does not modify vec.
 template <class C>
 static void TestFillInsert(C vec, unsigned iat, unsigned n)
 {
@@ -20,12 +21,12 @@ static void TestFillInsert(C vec, unsigned iat, unsigned n)
     vec.insert(spot,n,SelfCount(843));
     assert(vec.size() == size+n);
     assert(SelfCount::OwnerCount() == count0+n);
-    assert(vec[iat-1]() == iat-1);
-    assert(vec[iat]() == 843);
-    assert(vec[iat+n-1]() == 843);
-    if (iat < size) {
-        assert(vec[iat+n]() == iat);
-        assert(vec[size+n-1]()== size-1);
+    auto pCell = vec.begin();
+    for (unsigned i = 0; i < vec.size(); ++i, ++pCell)
+    {
+        if (i < iat) assert((*pCell)() == i);
+        else if (iat+n <= i) assert((*pCell)() == i-n);
+        else (*pCell)() == 843;
     }
 }
 
@@ -223,6 +224,17 @@ int main() {
     }
     assert(SelfCount::OwnerCount() == 0);
     {
+        // end(), iterator arithmetic
+        mf_vector<int,5> i5;
+        assert(i5.begin() == i5.end());
+        for (unsigned j = 0; j < 51; ++j) {
+            i5.push_back(j);
+            assert(i5.begin()+i5.size() == i5.end());
+            assert(*(i5.end()-1) == j);
+            assert(*(i5.end()-i5.size()) == 0);
+        }
+    }
+    {
         // Operation on iterators
         using Vec = mf_vector<int,5>;
         using It  = Vec::const_iterator;
@@ -364,7 +376,7 @@ int main() {
         // The many flavors of insert()
 
         assert(SelfCount::OwnerCount() == 0);
-        mf_vector<SelfCount,99> roop;
+        mf_vector<SelfCount,5> roop;
         for (unsigned i = 0; i < 47; ++i)
             roop.emplace_back(i);
 
@@ -383,9 +395,10 @@ int main() {
         // Fill insert()
         assert(roop.size() == 47);
         assert(SelfCount::OwnerCount() == 47);
-        TestFillInsert(roop,19,13);
+        TestFillInsert(roop,20,3);
         TestFillInsert(roop,43,13);
         TestFillInsert(roop,roop.size(),13);
+        TestFillInsert(roop,0,13);
         {
             // Range insert()
             std::list<int> intList;
@@ -509,12 +522,16 @@ int main() {
         assert(v0 != v1);
     }
     {
+        /*
         // Grow it big (needs 1.5GB)
         const uint64_t sz = 3*64*1024*1024;
-        mf_vector<int64_t,8*1024> big;
+        mf_vector<int64_t,1024> big;
+        big.reserve(sz);
+        assert(big.capacity() >= sz);
         for (int_fast64_t j = 0; j < sz; ++j)
             big.push_back(j);
         for (int_fast64_t j = 0; j < sz; j += 93)
             assert(big[j] == j);
+        */
     }
 }
