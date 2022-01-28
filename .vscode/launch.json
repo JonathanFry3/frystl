@@ -15,9 +15,10 @@
 			"cwd": "${workspaceFolder}",
 			"environment": [],
 			"externalConsole": false,
-            "visualizerFile": "${workspaceFolder}/KSolve.natvis",
+            "visualizerFile": "${workspaceFolder}/frystl.natvis",
             "showDisplayString": true
         }
+		//
 		{
 			"name": "(Windows) Launch test-sv",
             "type": "cppdbg",
@@ -28,10 +29,10 @@
 			"cwd": "${workspaceFolder}",
 			"environment": [],
 			"externalConsole": false,
-            "visualizerFile": "${workspaceFolder}/KSolve.natvis",
+            "visualizerFile": "${workspaceFolder}/frystl.natvis",
             "showDisplayString": true
         }
-        //
+        */
 		{
 			"name": "(gdb) Launch test-mfv",
             "type": "cppdbg",
@@ -42,9 +43,9 @@
 			"cwd": "${workspaceFolder}",
 			"environment": [],
 			"externalConsole": false,
-            "visualizerFile": "${workspaceFolder}/KSolve.natvis",
+            "visualizerFile": "${workspaceFolder}/frystl.natvis",
             "showDisplayString": true
         }
-        */
+        //
     ]
 }
