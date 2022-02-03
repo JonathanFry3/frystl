@@ -32,4 +32,7 @@
           </ArrayItems>
       </Expand>
   </Type>
+  <Type Name="frystl::mf_vector&lt;*,*,*&gt;">
+    <DisplayString>size = {_size}</DisplayString>
+  </Type>
 </AutoVisualizer>
