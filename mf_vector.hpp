@@ -578,7 +578,10 @@ namespace frystl
         }
         void resize(size_type n)
         {
-            resize(n, value_type());
+            while (n < size())
+                pop_back();
+            while (size() < n)
+                emplace_back();
         }
         iterator begin() noexcept
         {
