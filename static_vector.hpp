@@ -389,7 +389,7 @@ namespace frystl
             while (n < size())
                 pop_back();
             while (size() < n)
-                emplace_back(value_type());
+                emplace_back();
         }
         void swap(this_type &x)
         {
