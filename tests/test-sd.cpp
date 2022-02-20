@@ -100,12 +100,12 @@ int main() {
         }            
     }
     {
-        // Default Constructor, empty()
+        // Default Constructor, empty(), max_size()
         static_deque<SelfCount,50> di50;
         assert(SelfCount::OwnerCount() == 0);
         assert(di50.size() == 0);
         assert(di50.empty());
-
+        assert(di50.max_size() == 99);
 
         // emplace_back(), size()
         for (unsigned i = 0; i < 50; i+= 1){
