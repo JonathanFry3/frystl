@@ -288,7 +288,7 @@ namespace frystl
             return p;
         }
         // move insert()
-        iterator insert(iterator position, value_type &&val)
+        iterator insert(const_iterator position, value_type &&val)
         {
             FRYSTL_ASSERT2(_size < Capacity, "static_vector::insert: overflow");
             FRYSTL_ASSERT2(GoodIter(position),"static_vector::insert(): bad position");
