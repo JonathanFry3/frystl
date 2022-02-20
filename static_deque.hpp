@@ -32,8 +32,8 @@
 //      
 // Note that this container can work for implementing small queues, 
 // since the push_... and emplace_... functions recenter the data 
-// rather than overflowing, but it may be slower than std::deque in
-// that role.
+// rather than overflowing, but it may be slower than std::deque 
+// or std::list in that role.
 //
 // Iterators, references, and pointers to elements remain valid 
 // through all operations except erase() unless the operation 
