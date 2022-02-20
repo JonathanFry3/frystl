@@ -380,17 +380,32 @@ int main() {
         for (unsigned i = 0; i < 47; ++i)
             roop.emplace_back(i);
 
-        // Move insert()
-        assert(SelfCount::OwnerCount() == 47);
-        auto spot = roop.begin()+9;
-        roop.insert(spot,SelfCount(71));
-        assert(roop.size() == 48);
-        assert(SelfCount::OwnerCount() == 48);
-        assert(roop[8]() == 8);
-        assert(roop[9]() == 71);
-        assert(roop[10]() == 9);
-        assert(roop[47]() == 46);
-        roop.erase(spot);
+        // Move insert(), copy insert()
+        {
+            auto spot = roop.begin()+9;
+            SelfCount obj(71);
+            assert(SelfCount::OwnerCount() == 48);
+            // copy first
+            roop.insert(spot,obj);
+            assert(roop.size() == 48);
+            assert(SelfCount::OwnerCount() == 49);
+            assert(roop[8]() == 8);
+            assert(roop[9]() == 71);
+            assert(roop[10]() == 9);
+            assert(roop[47]() == 46);
+            roop.erase(spot);
+
+            // then move
+            assert(SelfCount::OwnerCount() == 48);
+            roop.insert(spot,std::move(obj));
+            assert(SelfCount::OwnerCount() == 48);
+            assert(roop.size() == 48);
+            assert(roop[8]() == 8);
+            assert(roop[9]() == 71);
+            assert(roop[10]() == 9);
+            assert(roop[47]() == 46);
+            roop.erase(spot);
+        }
 
         // Fill insert()
         assert(roop.size() == 47);
