@@ -17,7 +17,7 @@ static void TestFillInsert(C vec, unsigned iat, unsigned n)
     unsigned count0 = SelfCount::Count();
     unsigned ownerCount0 = SelfCount::OwnerCount();
     unsigned size = vec.size();
-    auto spot = vec.begin() + iat;
+    auto spot = vec.cbegin() + iat;
     vec.insert(spot,n,SelfCount(843));
     assert(vec.size() == size+n);
     assert(SelfCount::Count() == count0+n);
@@ -375,7 +375,7 @@ int main() {
         {
             // Move insert()
             assert(SelfCount::OwnerCount() == 47);
-            auto spot = roop.begin()+9;
+            auto spot = roop.cbegin()+9;
             SelfCount ob{71};
             roop.insert(spot,std::move(ob));
             assert(roop.size() == 48);
@@ -406,7 +406,7 @@ int main() {
             assert(r2.size() == 47);
             assert(SelfCount::OwnerCount() == 47*2);
             assert(SelfCount::Count() == 47*2);
-            r2.insert(r2.begin()+31, intList.begin(), intList.end());
+            r2.insert(r2.cbegin()+31, intList.cbegin(), intList.cend());
             assert(r2.size() == 47+9);
             assert(SelfCount::Count() == 2*47+9);
             assert(SelfCount::OwnerCount() == 2*47+9);
@@ -425,7 +425,7 @@ int main() {
             assert(r2.size() == 47);
             assert(SelfCount::Count() == 47*2);
             assert(SelfCount::OwnerCount() == 47*2);
-            r2.insert(r2.begin()+31, intList.begin(), intList.end());
+            r2.insert(r2.cbegin()+31, intList.cbegin(), intList.cend());
             assert(r2.size() == 47+9);
             assert(SelfCount::Count() == 2*47+9);
             assert(SelfCount::OwnerCount() == 2*47+9);
@@ -441,7 +441,7 @@ int main() {
              assert(SelfCount::Count() == 2*47);
            assert(SelfCount::OwnerCount() == 47*2);
             using Z = SelfCount;
-            r2.insert(r2.begin()+31, {Z(-72),Z(0),Z(274),Z(-34245)});
+            r2.insert(r2.cbegin()+31, {Z(-72),Z(0),Z(274),Z(-34245)});
             assert(r2.size() == 47+4);
             assert(SelfCount::Count() == 2*47+4);
             assert(SelfCount::OwnerCount() == 2*47+4);

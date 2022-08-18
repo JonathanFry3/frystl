@@ -17,7 +17,7 @@ static void TestFillInsert(C vec, unsigned iat, unsigned n)
 {
     unsigned count0 = SelfCount::OwnerCount();
     unsigned size = vec.size();
-    auto spot = vec.begin() + iat;
+    auto spot = vec.cbegin() + iat;
     vec.insert(spot,n,SelfCount(843));
     assert(vec.size() == size+n);
     assert(SelfCount::OwnerCount() == count0+n);
@@ -382,7 +382,7 @@ int main() {
 
         // Move insert(), copy insert()
         {
-            auto spot = roop.begin()+9;
+            auto spot = roop.cbegin()+9;
             SelfCount obj(71);
             assert(SelfCount::OwnerCount() == 48);
             // copy first
@@ -423,7 +423,7 @@ int main() {
             mf_vector<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
             assert(SelfCount::OwnerCount() == 47*2);
-            r2.insert(r2.begin()+31, intList.begin(), intList.end());
+            r2.insert(r2.cbegin()+31, intList.cbegin(), intList.cend());
             assert(r2.size() == 47+9);
             assert(SelfCount::OwnerCount() == 2*47+9);
             assert(r2[30]() == 30);
@@ -437,7 +437,7 @@ int main() {
             assert(r2.size() == 47);
             assert(SelfCount::OwnerCount() == 47*2);
             using Z = SelfCount;
-            r2.insert(r2.begin()+31, {Z(-72),Z(0),Z(274),Z(-34245)});
+            r2.insert(r2.cbegin()+31, {Z(-72),Z(0),Z(274),Z(-34245)});
             assert(r2.size() == 47+4);
             assert(SelfCount::OwnerCount() == 2*47+4);
             assert(r2[30]() == 30);

@@ -439,12 +439,12 @@ namespace frystl
         }
         reference operator[](size_type index) noexcept
         {
-            FRYSTL_ASSERT2(index < _size,"mf_vector::front() on empty vector");
+            FRYSTL_ASSERT2(index < _size,"mf_vector::operator[] index error");
             return *(_blocks[index / BlockSize] + index % BlockSize);
         }
         const_reference operator[](size_type index) const noexcept
         {
-            FRYSTL_ASSERT2(index < _size,"mf_vector::front() on empty vector");
+            FRYSTL_ASSERT2(index < _size,"mf_vector::operator[] index error");
             return *(_blocks[index / BlockSize] + index % BlockSize);
         }
         iterator erase(const_iterator first, const_iterator last) noexcept
@@ -530,12 +530,12 @@ namespace frystl
         }
 
         // move insert()
-        iterator insert(iterator position, value_type&& val)
+        iterator insert(const_iterator position, value_type&& val)
         {
             return emplace(position, std::move(val));
-        }
+        }       
         // copy insert()
-        iterator insert(iterator position, value_type& val)
+        iterator insert(const_iterator position, value_type& val)
         {
             return emplace(position, val);
         }

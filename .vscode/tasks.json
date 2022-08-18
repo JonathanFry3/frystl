@@ -32,7 +32,8 @@
 				"-g",
 				"tests/test-sd.cpp",
 				"-I", "${workspaceFolder}",
-				"-o","${workspaceFolder}/test-sd"
+				"-o","${workspaceFolder}/test-sd",
+				"-Wno-placement-new"						// g++ 9.0 bug
 				,"&&","(","${workspaceFolder}/test-sd"
 				,"||","echo","FAIL",")"
 			],
