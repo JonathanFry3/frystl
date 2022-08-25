@@ -366,15 +366,33 @@ int main() {
 
         // Move insert()
         assert(SelfCount::Count() == 47);
-        roop.insert(roop.cbegin()+9,SelfCount(71));
-        assert(roop.size() == 48);
-        assert(SelfCount::Count() == 48);
-        assert(SelfCount::OwnerCount() == 48);
-        assert(roop[8]() == 8);
-        assert(roop[9]() == 71);
-        assert(roop[10]() == 9);
-        assert(roop[47]() == 46);
-        roop.erase(roop.cbegin()+9);
+        {
+            SelfCount dummy(73);
+            roop.insert(roop.cbegin()+9,std::move(dummy));
+            assert(roop.size() == 48);
+            assert(SelfCount::Count() == 49);
+            assert(SelfCount::OwnerCount() == 48);
+            assert(roop[8]() == 8);
+            assert(roop[9]() == 73);
+            assert(roop[10]() == 9);
+            assert(roop[47]() == 46);
+            roop.erase(roop.cbegin()+9);
+        }
+
+        // Copy insert()
+        assert(SelfCount::Count() == 47);
+        {
+            SelfCount dummy(71);
+            roop.insert(roop.cbegin()+9,dummy);
+            assert(roop.size() == 48);
+            assert(SelfCount::Count() == 49);
+            assert(SelfCount::OwnerCount() == 49);
+            assert(roop[8]() == 8);
+            assert(roop[9]() == 71);
+            assert(roop[10]() == 9);
+            assert(roop[47]() == 46);
+            roop.erase(roop.cbegin()+9);
+        }
 
         // Fill insert()
         assert(roop.size() == 47);
