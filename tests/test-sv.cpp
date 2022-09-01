@@ -78,21 +78,15 @@ int main() {
             assert(SelfCount::Count() == 30);
             assert(SelfCount::OwnerCount() == 30);
             static_vector<SelfCount,73> i73 (std::move(sv));
-            assert(sv.size() == 30);
+            assert(sv.size() == 0);
             assert(i73.size() == 30);
-            assert(SelfCount::Count() == 60);
+            assert(SelfCount::Count() == 30);
             assert(SelfCount::OwnerCount() == 30);
             for (int i = 0; i < 30; ++i) assert(i73[i]() == i-13);
+            sv = std::move(i73);
 
-            assert(SelfCount::Count() == 60);
+            assert(SelfCount::Count() == 30);
             assert(SelfCount::OwnerCount() == 30);
-            static_vector<SelfCount,95> i95 (std::move(sv));
-            assert(sv.size() == 30);
-            assert(i95.size() == 30);
-            assert(SelfCount::Count() == 90);
-            assert(SelfCount::OwnerCount() == 30);
-            for (int i = 0; i < 30; ++i) assert(i95[i]() == i-13);
-
         }
         {
             // initializer list constructor
@@ -307,7 +301,7 @@ int main() {
         b = std::move(a);
         assert(b.size() == 20);
         assert(SelfCount::OwnerCount() == 20);
-        assert(SelfCount::Count() == 40);
+        assert(SelfCount::Count() == 20);
         assert(a != b);
 
         a = b;
@@ -352,7 +346,7 @@ int main() {
         // move operator=()
         b = std::move(a);
         assert(b.size() == 20);
-        assert(SelfCount::Count() == 40);
+        assert(SelfCount::Count() == 20);
         assert(SelfCount::OwnerCount() == 20);
         assert(a != b);
 
