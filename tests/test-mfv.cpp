@@ -11,7 +11,7 @@ using namespace frystl;
 // Test fill insert.
 // Assumes vec is a vector of type SelfCount
 // such that vec[i]() == i for all vec[i].
-// Does not modify vec.
+// Works on a copy of vec.
 template <class C>
 static void TestFillInsert(C vec, unsigned iat, unsigned n)
 {
