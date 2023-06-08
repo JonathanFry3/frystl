@@ -21,7 +21,7 @@ if possible (although that will hurt performance). Its random access speed is ac
 than that of an STL deque because an STL deque need two levels of index.
 ## mf_vector
 This stands for *memory friendly vector.* It is a drop-in replacement for almost any STL vector that
-uses the standard allocator (it has no support for allocators) but different performance characteristics.
+uses the standard allocator (it has no support for allocators) but has different performance characteristics.
 Like an STL vector, it can grow dynamically. When an STL vector overflows the space in the dynamic
 memory it has reserved for its elements, it allocates a larger array (often double the original size)
 and copies the members to that larger array.  During this process, it is commonly using three times the memory
@@ -31,9 +31,9 @@ fixed sized blocks, like an STL deque, so a static vector with block size *b* ho
 elements never allocates more than space for *n+b* elements. Its random access speed is slower than
 that of an STL vector because it uses two levels of index. It has no *data()* member function.
 
-An mf_vector offers another advantage. It is stable with respect to *push_back()* or *emplace_back* 
-calls.  That is, pointers, iterators, 
+An mf_vector offers another advantage. It is stable with respect to *push_back()* or *emplace_back()* 
+calls.  That is, pointers
 and references are still valid after such a call. 
-It also means that up to a predefined size, which can easily be made *very* large, random read access 
+It also means that up to a predefined size, which can easily be made *very* large, read access 
 is safe in a multi-threaded program as long as the only changes being made are new elements added
 at the back.
