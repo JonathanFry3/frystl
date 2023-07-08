@@ -2,6 +2,7 @@
 
 #define FRYSTL_DEBUG
 #include <vector>
+#include <iostream>  // cerr
 #include <list>
 #include "mf_vector.hpp"
 #include "SelfCount.hpp"
@@ -549,4 +550,5 @@ int main() {
             assert(big[j] == j);
         */
     }
+    std::cerr << "test-mfv completed normally." << std::endl;
 }

@@ -100,6 +100,7 @@ SOFTWARE.
 #include <iterator>  // reverse_iterator
 #include <vector>
 #include <type_traits> // conditional
+#include <algorithm>   // rotate
 #include <initializer_list>
 #include "frystl-defines.hpp"
 
@@ -325,7 +326,7 @@ namespace frystl
             : _size(0)
         {
             _blocks.reserve(NBlocks + 1);
-            _blocks.push_back(static_cast<pointer>(&MFVectorDummyEnd));
+            _blocks.push_back(reinterpret_cast<pointer>(&MFVectorDummyEnd));
         }
         // Fill constructors
         explicit mf_vector(size_type count, const_reference value)
@@ -595,11 +596,19 @@ namespace frystl
                   typename = RequireInputIter<InputIterator>> 
         iterator insert(const_iterator position, InputIterator first, InputIterator last)
         {
-            iterator result = MakeIterator(position);
-            iterator p = result;
-            while (first != last)
-                emplace(p++, *first++);
-            return result;
+            size_type posIndex = position-begin();
+            size_type oldSize = _size;   
+            try {
+                // append(first,last);
+                while (first != last) {
+                    push_back(*first++);
+                }
+                std::rotate(begin()+posIndex, begin()+oldSize, end());
+            } catch (std::bad_alloc){
+                _size = oldSize;
+                Shrink();
+            }
+            return begin()+posIndex;
         }
         // initializer list insert()
         iterator insert(const_iterator position, std::initializer_list<value_type> il)
