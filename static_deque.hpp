@@ -401,9 +401,13 @@ public:
                 InpIter last,
                 std::input_iterator_tag)
             {
-                while (first != last)
-                    insert(position++, *first++);
-                return const_cast<iterator>(position);
+                size_type posIndex = position-begin();
+                size_type oldSize = size();
+                while (first != last) {
+                    push_back(*first++);
+                }
+                std::rotate(begin()+posIndex, begin()+oldSize, end());
+                return begin()+posIndex;
             }
             // Implementation for iterators having operator-()
             template <class DAIter>

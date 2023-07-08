@@ -5,6 +5,7 @@
 #include "SelfCount.hpp"
 #include <vector>
 #include <list>
+#include <iostream>
 
 using namespace frystl;
 
@@ -592,4 +593,5 @@ int main() {
         assert(v0 < v1);
         assert(v0 != v1);
     }
+    std::cout << "test-sd ran normally." << std::endl;
 }
