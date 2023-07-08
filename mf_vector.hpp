@@ -685,11 +685,16 @@ namespace frystl
         // Invalidates iterators.
         void Grow(size_type newSize)
         {
-            while ((_blocks.size() - 1) * _blockSize < newSize)
-            {
-                pointer b = reinterpret_cast<pointer>(new storage_type[_blockSize]);
-                _blocks.push_back(_blocks.back());
-                *(_blocks.end() - 2) = b;
+            try {
+                while ((_blocks.size() - 1) * _blockSize < newSize)
+                {
+                    pointer b = reinterpret_cast<pointer>(new storage_type[_blockSize]);
+                    _blocks.push_back(_blocks.back());
+                    *(_blocks.end() - 2) = b;
+                }
+            catch (...) {
+                Shrink();
+                throw;
             }
         }
         // Release any no-longer-needed storage blocks.
@@ -701,8 +706,8 @@ namespace frystl
                 auto ender = _blocks.back();
                 do {
                     delete[] reinterpret_cast<storage_type*>(*(_blocks.end() - 2));
-                _blocks.pop_back();
-                cap -= _blockSize;
+                    _blocks.pop_back();
+                    cap -= _blockSize;
                 } while (_size + _blockSize <= cap);
                 _blocks.back() = ender;
             }
