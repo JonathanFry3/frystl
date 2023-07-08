@@ -692,6 +692,7 @@ namespace frystl
                     _blocks.push_back(_blocks.back());
                     *(_blocks.end() - 2) = b;
                 }
+            }
             catch (...) {
                 Shrink();
                 throw;
