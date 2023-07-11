@@ -643,28 +643,24 @@ namespace frystl
         void SlideToFront()
         {
             size_type oldSize = size();
-            pointer newBegin = FirstSpace();
-            for (auto src = _begin; src != _end; ++src, ++newBegin) {
-                if (newBegin < _begin)
-                    new(newBegin) value_type(std::move(*src));
-                else
-                    *newBegin = std::move(*src);
+            pointer tgt = FirstSpace();
+            pointer src = _begin;
+            while (src != _end && tgt < _begin) {
+                    new(tgt++) value_type(std::move(*src++));                
             }
+            _end = std::move(src, _end, tgt);
             _begin = FirstSpace();
-            _end = newBegin;
             FRYSTL_ASSERT(oldSize == size());
         }
         void SlideToBack()
         {
             size_type oldSize = size();
-            pointer newEnd = PastLastSpace() - 1;
-            for (auto src = _end-1; src >= _begin; --src, --newEnd) {
-                if (_end <= newEnd)
-                    new(newEnd) value_type(std::move(*src));
-                else
-                    *newEnd = std::move(*src);
+            pointer tgt = PastLastSpace();
+            pointer src = _end;
+            while (_begin < src && _end <= tgt) {
+                new(--tgt) value_type(std::move(*--src));
             }
-            _begin = newEnd + 1;
+            _begin = std::move_backward(_begin, src, tgt);
             _end = PastLastSpace();
             FRYSTL_ASSERT(oldSize == size());
         }
