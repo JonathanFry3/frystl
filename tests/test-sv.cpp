@@ -3,6 +3,7 @@
 #define FRYSTL_DEBUG
 #include "static_vector.hpp"
 #include "SelfCount.hpp"
+#include <iostream>
 #include <vector>
 #include <list>
 
@@ -536,4 +537,5 @@ int main() {
         assert(v0 < v1);
         assert(v0 != v1);
     }
+    std::cout << "test-sv finished normally." << std::endl;
 }

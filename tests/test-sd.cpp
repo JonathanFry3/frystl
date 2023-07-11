@@ -123,6 +123,8 @@ int main() {
             assert(SelfCount::OwnerCount() == di50.size());
         }
         assert(di50.size() == 30);
+        assert(SelfCount::OwnerCount() == 30);
+
         
         // at()
         assert(di50.at(9)() == 9);
@@ -135,8 +137,10 @@ int main() {
         catch (...) {assert(false);}
 
         // operator[](), back(), front()
+        assert(SelfCount::OwnerCount() == 30);
         assert(di50[7]() == 7);
         di50[7] = SelfCount(91);
+        assert(SelfCount::OwnerCount() == 30);
         assert(di50[7]() == 91);
         di50[7] = SelfCount(7);
         assert(cdi50[23]() == 23);
@@ -147,6 +151,7 @@ int main() {
         assert(di50.back()() == 29);
         assert(di50.front()() == 0);
         assert(cdi50.front()() == 0);
+        assert(SelfCount::OwnerCount() == 30);
 
         // push_back()
         di50.push_back(SelfCount(30));
@@ -495,7 +500,7 @@ int main() {
         static_deque<int,20> rc;
         int j, j2 = 0;
         for (unsigned i = 0; i < 5; ++i) {
-            while (rc.size() < 30)
+            while (rc.size() < 39)
                 rc.push_front(j++);
             while (20 < rc.size()) {
                 assert(rc.back() == j2++);
@@ -507,7 +512,7 @@ int main() {
         static_deque<int,20> rc;
         int j, j2 = 0;
         for (unsigned i = 0; i < 5; ++i) {
-            while (rc.size() < 30)
+            while (rc.size() < 39)
                 rc.emplace_back(j++);
             while (20 < rc.size()){
                 assert(rc.front() == j2++);
