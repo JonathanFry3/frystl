@@ -10,15 +10,8 @@
 // element has been added (either way), there is space for x-1 more
 // elements on either side of it.
 //
-// Whenever possible, constructors and assignment functions (assign() and 
-// operator=()) center the data in the available space.  The exceptions
-// are range operations using iterators that do not support a difference
-// function (operator-()); in those cases, the first element is in
-// the center space and the others follow.
-//
-// All the operations that add data (push_...(), emplace...(), insert(), 
-// assignments and constructors) avoid overflow if possible by sliding data 
-// away from the end that is being approached. This can be costly and
+// Whenever a static_deque runs out of space on one end, it slides all
+// of the data to the other end. This can be costly and
 // invalidate iterators, pointers, and references.
 //
 // The template implements the semantics of std::deque with the following
@@ -31,7 +24,7 @@
 //          returns can be used like the iterator returned by begin().
 //      
 // Note that this container can work for implementing small queues, 
-// since the push_... and emplace_... functions recenter the data 
+// since the push_... and emplace_... functions slide the data 
 // rather than overflowing, but it may be slower than std::deque 
 // or std::list in that role.
 //
@@ -170,7 +163,7 @@ namespace frystl
         void clear() noexcept
         {
             DestructAll();
-            _begin = _end = Centered(0);
+            _begin = _end = Centered(1);
         }
         size_type size() const noexcept
         {
@@ -184,33 +177,20 @@ namespace frystl
         {
             return 2*Capacity - 1;
         }
-private:
-        // Slide the data left or right to center it.
-        void Recenter()
-        {
-            size_type sz = size();
-            auto begin = Centered(sz);
-            FRYSTL_ASSERT2(FirstSpace() <= begin,"static_deque overflow");
-            if (begin < _begin) 
-                std::move(_begin,_end,begin);
-            else if  (_begin < begin) 
-                std::move_backward(_begin,_end,begin+sz);
-            _begin = begin;
-            _end = _begin+sz;
-        }
-public:
         template <class... Args>
         void emplace_front(Args... args)
         {
             if (_begin == FirstSpace()) 
-                Recenter();
+                SlideToBack();
+            FRYSTL_ASSERT2(FirstSpace() < _begin,"static_deque overflow");
             new (_begin - 1) value_type(args...);
             --_begin;
         }
         void push_front(const_reference t)
         {
             if (_begin == FirstSpace()) 
-                Recenter();
+                SlideToBack();
+            FRYSTL_ASSERT2(FirstSpace() < _begin,"static_deque overflow");
             new (_begin - 1) value_type(t);
             --_begin;
         }
@@ -223,15 +203,17 @@ public:
         template <class... Args>
         void emplace_back(Args... args)
         {
-            if (_end == FirstSpace() + _trueCap)
-                Recenter();
+            if (_end == PastLastSpace())
+                SlideToFront();
+            FRYSTL_ASSERT2(_end < PastLastSpace(),"static_deque overflow");
             new (_end) value_type(args...);
             ++_end;
         }
         void push_back(const_reference t) noexcept
         {
             if (_end == FirstSpace() + _trueCap)
-                Recenter();
+                SlideToFront();
+            FRYSTL_ASSERT2(_end < FirstSpace() + _trueCap,"static_deque overflow");
             new (_end) value_type(t);
             ++_end;
         }
@@ -404,7 +386,7 @@ public:
                 size_type posIndex = position-begin();
                 size_type oldSize = size();
                 while (first != last) {
-                    push_back(*first++);
+                    emplace_back(*first++);
                 }
                 std::rotate(begin()+posIndex, begin()+oldSize, end());
                 return begin()+posIndex;
@@ -473,7 +455,7 @@ public:
         }
         void shrink_to_fit()
         {}                  // does nothing
-    iterator begin() noexcept
+        iterator begin() noexcept
         {
             return _begin;
         }
@@ -641,10 +623,10 @@ public:
         template <class InpIter>
         void Center(InpIter begin, InpIter end, std::input_iterator_tag)
         {
-            _begin = _end = Centered(0);
+            _begin = _end = FirstSpace();
         }
         template <class... Args>
-        void FillCell(iterator b, iterator e, iterator pos, Args... args)
+        void FillCell(const_iterator b, const_iterator e, iterator pos, Args... args)
         {
             if (b <= pos && pos < e)
                 // fill previously occupied cell using assignment
@@ -657,6 +639,34 @@ public:
         {
             for (reference elem : *this)
                 elem.~value_type(); // destruct all elements
+        }
+        void SlideToFront()
+        {
+            size_type oldSize = size();
+            pointer newBegin = FirstSpace();
+            for (auto src = _begin; src != _end; ++src, ++newBegin) {
+                if (newBegin < _begin)
+                    new(newBegin) value_type(std::move(*src));
+                else
+                    *newBegin = std::move(*src);
+            }
+            _begin = FirstSpace();
+            _end = newBegin;
+            FRYSTL_ASSERT(oldSize == size());
+        }
+        void SlideToBack()
+        {
+            size_type oldSize = size();
+            pointer newEnd = PastLastSpace() - 1;
+            for (auto src = _end-1; src >= _begin; --src, --newEnd) {
+                if (_end <= newEnd)
+                    new(newEnd) value_type(std::move(*src));
+                else
+                    *newEnd = std::move(*src);
+            }
+            _begin = newEnd + 1;
+            _end = PastLastSpace();
+            FRYSTL_ASSERT(oldSize == size());
         }
     };
     //
