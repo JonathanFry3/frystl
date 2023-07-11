@@ -24,20 +24,21 @@ struct SelfCount {
     SelfCount(const SelfCount& val)
         : _member(val._member), _owns(true)
         {
-            IncrOwnerCount(1);
+            IncrOwnerCount(val._owns);
             IncrCount(1);
         }
     SelfCount(SelfCount&& val)
         : _member(val._member)
         , _owns(val._owns)
         {
-            val._owns = false;
+            IncrOwnerCount(val._owns);
             IncrCount(1);
+            val.Disown();
         }
     SelfCount & operator=(SelfCount&& right)
     {
         if (this != &right) {
-            IncrOwnerCount(-_owns); 
+            Disown();
             _member = right._member;
             _owns = right._owns;
             right._owns = false;
@@ -58,12 +59,9 @@ struct SelfCount {
     bool Owns() const noexcept {return _owns;}
     
     ~SelfCount() {
-        IncrOwnerCount(-_owns); 
         IncrCount(-1);
-        _owns = false;
-        assert(ownerCount >= 0);
+        Disown();
     }
-
     static int Count()
     {
         return count;
@@ -86,6 +84,12 @@ private:
     void IncrCount(int i) 
     {
         count += i;
+    }
+    void Disown()
+    {
+        IncrOwnerCount(-_owns); 
+        _owns = false;
+        assert(ownerCount >= 0);
     }
 };
 
