@@ -376,7 +376,7 @@ namespace frystl
                 MakeRoom(p,n);
                 iterator result = p;
                 while (first != last) {
-                    FillCell(p++, *first++);
+                    new(p++) value_type(*first++);
                 }
                 _size += n;
                 return result;
@@ -460,7 +460,7 @@ namespace frystl
                 // fill previously occupied cell using assignment
                 (*pos)  = value_type(args...);
             else 
-                // fill unoccupied cell in place by constructon
+                // fill unoccupied cell in place by copy constructon
                 new (pos) value_type(args...);
         }
         //

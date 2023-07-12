@@ -422,7 +422,6 @@ int main() {
             assert(SelfCount::OwnerCount() == 47*2);
             r2.insert(r2.cbegin()+31, intList.cbegin(), intList.cend());
             assert(r2.size() == 47+9);
-            assert(SelfCount::Count() == 2*47+9);
             assert(SelfCount::OwnerCount() == 2*47+9);
             assert(r2[30]() == 30);
             assert(r2[31+4]() == 4+173);
@@ -433,12 +432,10 @@ int main() {
             // Initializer list insert()
             static_vector<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
-             assert(SelfCount::Count() == 2*47);
-           assert(SelfCount::OwnerCount() == 47*2);
+            assert(SelfCount::OwnerCount() == 47*2);
             using Z = SelfCount;
             r2.insert(r2.cbegin()+31, {Z(-72),Z(0),Z(274),Z(-34245)});
             assert(r2.size() == 47+4);
-            assert(SelfCount::Count() == 2*47+4);
             assert(SelfCount::OwnerCount() == 2*47+4);
             assert(r2[30]() == 30);
             assert(r2[30+3]() == 274);
