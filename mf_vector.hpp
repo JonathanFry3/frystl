@@ -401,7 +401,7 @@ namespace frystl
 
         void reserve(size_type newCap)
         {
-            size_type nBlocks = QuotientRoundedUp(newCap, BlockSize);
+            size_type nBlocks = Ceiling(newCap, BlockSize);
             _blocks.reserve(nBlocks+1);
         }
         size_type size() const noexcept
@@ -739,7 +739,7 @@ namespace frystl
                 } while (_size + _blockSize <= cap);
                 _blocks.back() = ender;
             }
-            FRYSTL_ASSERT2(QuotientRoundedUp(_size,BlockSize) + 1 == _blocks.size(),
+            FRYSTL_ASSERT2(Ceiling(_size,BlockSize) + 1 == _blocks.size(),
                 "mf_vector: internal error in Shrink()");
         }
         // Make n spaces available starting at pos.  Shift
