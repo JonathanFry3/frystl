@@ -496,7 +496,7 @@ int main() {
         assert(SelfCount::Count() == 56);
         assert(v99[55]() == 0);
     }{
-        // Recentering forward
+        // Slide to back
         static_deque<int,20> rc;
         int j, j2 = 0;
         for (unsigned i = 0; i < 5; ++i) {
@@ -506,9 +506,13 @@ int main() {
                 assert(rc.back() == j2++);
                 rc.pop_back();
             }
+            auto k = rc.front();
+            for (unsigned i = 0; i < rc.size() -1; ++i) {
+                assert (rc[i] == rc[i+1]+1 && "SlideToBack() failed");
+            }
         }
     }{
-        // Recentering backward
+        // Slide to front
         static_deque<int,20> rc;
         int j, j2 = 0;
         for (unsigned i = 0; i < 5; ++i) {
@@ -517,6 +521,10 @@ int main() {
             while (20 < rc.size()){
                 assert(rc.front() == j2++);
                 rc.pop_front();
+            }
+            auto k = rc.front();
+            for (unsigned i = 0; i < rc.size()-1; ++i) {
+                assert (rc[i]+1 == rc[i+1] && "SlideToFront() failed");
             }
         }
     }{
