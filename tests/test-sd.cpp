@@ -409,6 +409,18 @@ int main() {
         TestFillInsert(roop,19,13);
         TestFillInsert(roop,43,13);
         TestFillInsert(roop,roop.size(),13);
+        static_deque<int,20> fi20;
+        for (unsigned i = 0; i < 3; i++) {
+            fi20.push_front(9);
+            fi20.push_back(8);
+        }
+        fi20.insert(fi20.begin()+3,33,-3);
+        assert(fi20.size() == 39);
+        for (unsigned i = 0; i < fi20.size(); i++) {
+            if (i < 3) assert(fi20[i] == 9);
+            else if (i < 3+33) assert(fi20[i] == -3);
+            else assert(fi20[i] == 8);
+        }
 
 
         {

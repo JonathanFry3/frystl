@@ -29,8 +29,8 @@
 // or std::list in that role.
 //
 // Iterators, references, and pointers to elements remain valid 
-// through all operations except erase() unless the operation 
-// slides data to avoid overflow.
+// through all operations except erase() and insert() unless the
+// operation slides data to avoid overflow.
 //
 /*
 MIT License
@@ -180,19 +180,17 @@ namespace frystl
         template <class... Args>
         void emplace_front(Args... args)
         {
+            FRYSTL_ASSERT2(size() < _trueCap,"static_deque overflow");
             if (_begin == FirstSpace()) 
-                SlideToBack();
-            FRYSTL_ASSERT2(FirstSpace() < _begin,"static_deque overflow");
-            new (_begin - 1) value_type(args...);
-            --_begin;
+                SlideAllToBack();
+            new (--_begin) value_type(args...);
         }
         void push_front(const_reference t)
         {
+            FRYSTL_ASSERT2(size() < _trueCap,"static_deque overflow");
             if (_begin == FirstSpace()) 
-                SlideToBack();
-            FRYSTL_ASSERT2(FirstSpace() < _begin,"static_deque overflow");
-            new (_begin - 1) value_type(t);
-            --_begin;
+                SlideAllToBack();
+            new (--_begin) value_type(t);
         }
         void pop_front()
         {
@@ -203,19 +201,17 @@ namespace frystl
         template <class... Args>
         void emplace_back(Args... args)
         {
-            if (_end == PastLastSpace())
-                SlideToFront();
-            FRYSTL_ASSERT2(_end < PastLastSpace(),"static_deque overflow");
-            new (_end) value_type(args...);
-            ++_end;
+            FRYSTL_ASSERT2(size() < _trueCap,"static_deque overflow");
+            if (_end == PastLastSpace()) 
+                SlideAllToFront();
+            new (_end++) value_type(args...);
         }
         void push_back(const_reference t) noexcept
         {
-            if (_end == FirstSpace() + _trueCap)
-                SlideToFront();
-            FRYSTL_ASSERT2(_end < FirstSpace() + _trueCap,"static_deque overflow");
-            new (_end) value_type(t);
-            ++_end;
+            FRYSTL_ASSERT2(size() < _trueCap,"static_deque overflow");
+            if (_end == PastLastSpace()) 
+                SlideAllToFront();
+            new (_end++) value_type(t);
         }
         void pop_back() noexcept
         {
@@ -278,6 +274,8 @@ namespace frystl
         template <class... Args>
         iterator emplace(const_iterator pos, Args...args)
         {
+            FRYSTL_ASSERT2(cbegin() <= pos && pos <= cend(),
+                "Invalid position in static_deque::emplace()");
             bool atEdge = pos==cbegin() || pos==cend();
             iterator p = MakeRoom(pos,1);
             if (atEdge)
@@ -359,7 +357,7 @@ namespace frystl
             return t;
         }
         // fill insert
-        iterator insert(const_iterator position, size_type n, const value_type &val)
+        iterator insert(const_iterator position, size_type n, const_reference val)
         {
             FRYSTL_ASSERT2(begin() <= position && position <= end(),
                 "Bad position argument in static_deque::insert()");
@@ -410,7 +408,7 @@ namespace frystl
                 return result;
             }
         public:
-        template <class Iter>
+        template <class Iter,typename = RequireInputIter<Iter>>
         iterator insert(const_iterator position, Iter first, Iter last)
         {
             return insert(position,first,last,
@@ -570,13 +568,7 @@ namespace frystl
         // Update _end.
         iterator MakeRoomAfter(iterator p, size_type n)
         {
-            iterator src = end();
-            iterator tgt = src+n;
-            // Fill the uninitialized target cells by move construction
-            while(p<src && end()<tgt)
-                new (--tgt) value_type(std::move(*(--src)));       
-            // Shift elements to previously occupied cells by assignment
-            std::move_backward(p, src, tgt);
+            SlideToBack(p,_end+n);
             _end += n;
             return p;
         }
@@ -585,28 +577,29 @@ namespace frystl
         // Update _begin.
         iterator MakeRoomBefore(iterator p, size_type n)
         {
-            iterator src = begin();
-            iterator tgt = src-n;
-            FRYSTL_ASSERT2(FirstSpace() <= tgt,"Overflow in static_deque");
-            // fill the uninitialized target cells by move construction
-            while (src < p && tgt < begin())
-                new (tgt++) value_type(std::move(*(src++)));
-            // shift elements to previously occupied cells by move assignment
-            std::move(src,p,tgt);
+            SlideToFront(p, _begin-n);
             _begin -= n;
             return p-n;
         }
-        // Slide cells toward the front or back to make room for n elements
-        // before constp.  Choose the faster direction unless that will cause 
-        // overflow. Update _begin or _end. Return an iterator pointing to the 
-        // first cleared space. 
+        // Slide cells such that there are n empty cells between 
+        // constp and constp+n.  The order of all other cells
+        // is preserved.  Update _begin or _end or both. 
+        // Return an iterator pointing to the first cleared space, which
+        // may be different from constp.
         iterator MakeRoom(const_iterator constp, size_type n)
         {
+            FRYSTL_ASSERT2(size()+n <= _trueCap, "static_deque overflow");
             iterator p = const_cast<iterator>(constp);
             if (end()-p < p-begin() && end()+n <= PastLastSpace())
                 return MakeRoomAfter(p, n);
-            else
+            else if (FirstSpace() + n <= _begin)
                 return MakeRoomBefore(p, n);
+            else {
+                // Neither side has enough extra space
+                p -= _begin - FirstSpace();
+                SlideAllToFront();
+                return MakeRoomAfter(p, n);
+            }
         }
         // Return a pointer to the front end of a range of n cells centered
         // in the space.
@@ -640,29 +633,36 @@ namespace frystl
             for (reference elem : *this)
                 elem.~value_type(); // destruct all elements
         }
-        void SlideToFront()
+        void SlideAllToFront()
         {
-            size_type oldSize = size();
-            pointer tgt = FirstSpace();
+            auto sz = size();
+            SlideToFront(_end, FirstSpace());
+            _begin = FirstSpace();
+            _end = _begin + sz;
+        }
+        void SlideToFront(pointer last, pointer tgt)
+        {
             pointer src = _begin;
-            while (src != _end && tgt < _begin) {
+            while (src != last && tgt < _begin) {
                     new(tgt++) value_type(std::move(*src++));                
             }
-            _end = std::move(src, _end, tgt);
-            _begin = FirstSpace();
-            FRYSTL_ASSERT(oldSize == size());
+            std::move(src, last, tgt);
         }
-        void SlideToBack()
+        void SlideAllToBack()
         {
-            size_type oldSize = size();
-            pointer tgt = PastLastSpace();
+            auto sz = size();
+            SlideToBack(_begin, PastLastSpace());
+            _end = PastLastSpace();
+            _begin = _end-sz;
+        }
+        void SlideToBack(pointer first, pointer end)
+        {
+            pointer tgt = end;
             pointer src = _end;
-            while (_begin < src && _end <= tgt) {
+            while (first < src && _end < tgt) {
                 new(--tgt) value_type(std::move(*--src));
             }
-            _begin = std::move_backward(_begin, src, tgt);
-            _end = PastLastSpace();
-            FRYSTL_ASSERT(oldSize == size());
+            std::move_backward(first, src, tgt);
         }
     };
     //
