@@ -15,7 +15,7 @@ using namespace frystl;
 template <class C>
 static void TestFillInsert(C deq, unsigned iat, unsigned n)
 {
-    unsigned count0 = SelfCount::Count();
+    unsigned count0 = SelfCount::OwnerCount();
     unsigned ocount0 = SelfCount::OwnerCount();
     unsigned size = deq.size();
     auto spot = deq.cbegin() + iat;
@@ -106,7 +106,7 @@ int main() {
         assert(SelfCount::OwnerCount() == 0);
         assert(di50.size() == 0);
         assert(di50.empty());
-        assert(di50.max_size() == 99);
+        assert(di50.capacity() == 50);
 
         // emplace_back(), size()
         for (unsigned i = 0; i < 50; i+= 1){
@@ -231,7 +231,6 @@ int main() {
         assert((*di50.emplace(di50.cbegin()+8,96))() == 96);
         assert(di50[9]() == 9);
         assert(di50.size() == 31);
-        assert(SelfCount::Count() == di50.size());
         assert(SelfCount::OwnerCount() == di50.size());
 
         // clear()
@@ -273,7 +272,7 @@ int main() {
         assert(dv.size() == 9);
         for (unsigned i = 9; i < 9+9; ++i) {assert(dv[i-9]==i);}
 
-        static_deque<int,5> dv2;
+        static_deque<int,9> dv2;
         dv2.assign(dv.cbegin(),dv.cend());
         assert(dv2.size() == 9);
         for (unsigned i = 9; i < 9+9; ++i) {assert(dv2[i-9]==i);}
@@ -285,37 +284,32 @@ int main() {
     }{
         // assignment operators
         static_deque<SelfCount, 20> a, b;
-        assert(SelfCount::Count() == 0);
+        assert(SelfCount::OwnerCount() == 0);
         for (unsigned i = 0; i<20; ++i)
             a.emplace_back(i);
-        assert(SelfCount::Count() == 20);
+        assert(SelfCount::OwnerCount() == 20);
 
         // copy operator=()
         b = a;
         assert(a==b);
         assert(b.size() == 20);
-        assert(SelfCount::Count() == 40);
         assert(SelfCount::OwnerCount() == 40);
 
         a = a;
         assert(a.size() == 20);
         assert(a == b);
-        assert(SelfCount::Count() == 40);
         assert(SelfCount::OwnerCount() == 40);
 
         // move operator=()
         b = std::move(a);
         assert(b.size() == 20);
-        assert(SelfCount::Count() == 20);
         assert(SelfCount::OwnerCount() == 20);
         assert(a != b);
 
         a = b;
         assert(SelfCount::OwnerCount() == 40);
-        assert(SelfCount::Count() == 40);
 
         b = std::move(b);
-        assert(SelfCount::Count() == 40);
         assert(SelfCount::OwnerCount() == 40);
         assert(b.size() == 20);
         assert(a == b);
@@ -329,10 +323,10 @@ int main() {
         // assignment operators between deques of different capacities
         static_deque<SelfCount, 50> a;
         static_deque<SelfCount, 70> b;
-        assert(SelfCount::Count() == 0);
+        assert(SelfCount::OwnerCount() == 0);
         for (unsigned i = 0; i<20; ++i)
             a.emplace_back(i);
-        assert(SelfCount::Count() == 20);
+        assert(SelfCount::OwnerCount() == 20);
 
 
         // copy operator=()
@@ -344,7 +338,6 @@ int main() {
         a = a;
         assert(a.size() == 20);
         assert(a == b);
-        assert(SelfCount::Count() == 40);
         assert(SelfCount::OwnerCount() == 40);
 
         // move operator=()
@@ -354,29 +347,25 @@ int main() {
         assert(a != b);
 
         a = b;
-        assert(SelfCount::Count() == 40);
         assert(SelfCount::OwnerCount() == 40);
 
         b = std::move(b);
-        assert(SelfCount::Count() == 40);
         assert(SelfCount::OwnerCount() == 40);
         assert(b.size() == 20);
         assert(a == b); 
     }{
         // The many flavors of insert()
 
-        assert(SelfCount::Count() == 0);
         static_deque<SelfCount,99> roop;
         for (unsigned i = 0; i < 47; ++i)
             roop.emplace_back(i);
 
         // Move insert()
-        assert(SelfCount::Count() == 47);
+        assert(SelfCount::OwnerCount() == 47);
         {
             SelfCount dummy(73);
             roop.insert(roop.cbegin()+9,std::move(dummy));
             assert(roop.size() == 48);
-            assert(SelfCount::Count() == 49);
             assert(SelfCount::OwnerCount() == 48);
             assert(roop[8]() == 8);
             assert(roop[9]() == 73);
@@ -386,12 +375,10 @@ int main() {
         }
 
         // Copy insert()
-        assert(SelfCount::Count() == 47);
         {
             SelfCount dummy(71);
             roop.insert(roop.cbegin()+9,dummy);
             assert(roop.size() == 48);
-            assert(SelfCount::Count() == 49);
             assert(SelfCount::OwnerCount() == 49);
             assert(roop[8]() == 8);
             assert(roop[9]() == 71);
@@ -402,25 +389,24 @@ int main() {
 
         // Fill insert()
         assert(roop.size() == 47);
-        assert(SelfCount::Count() == 47);
         assert(SelfCount::OwnerCount() == 47);
         TestFillInsert(roop,0,14);
         TestFillInsert(roop,9,13);
         TestFillInsert(roop,19,13);
         TestFillInsert(roop,43,13);
         TestFillInsert(roop,roop.size(),13);
-        static_deque<int,20> fi20;
+        static_deque<int,41> fi41;
         int con {9};
         for (unsigned i = 0; i < 3; i++) {
-            fi20.push_front(con);
-            fi20.push_back(8);
+            fi41.push_front(con);
+            fi41.push_back(8);
         }
-        fi20.insert(fi20.begin()+3,33,-3);
-        assert(fi20.size() == 39);
-        for (unsigned i = 0; i < fi20.size(); i++) {
-            if (i < 3) assert(fi20[i] == 9);
-            else if (i < 3+33) assert(fi20[i] == -3);
-            else assert(fi20[i] == 8);
+        fi41.insert(fi41.begin()+3,33,-3);
+        assert(fi41.size() == 39);
+        for (unsigned i = 0; i < fi41.size(); i++) {
+            if (i < 3) assert(fi41[i] == 9);
+            else if (i < 3+33) assert(fi41[i] == -3);
+            else assert(fi41[i] == 8);
         }
 
 
@@ -432,15 +418,15 @@ int main() {
             }
             static_deque<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
-            assert(SelfCount::Count() == 47*2);
+            assert(SelfCount::OwnerCount() == 47*2);
             r2.insert(r2.cbegin()+31, intList.cbegin(), intList.cend());
             assert(r2.size() == 47+9);
-            assert(SelfCount::Count() == 2*47+9);
+            assert(SelfCount::OwnerCount() == 2*47+9);
             assert(r2[30]() == 30);
             assert(r2[31+4]() == 4+173);
             assert(r2[31+9]() == 31);
         }
-        assert(SelfCount::Count() == 47);
+        assert(SelfCount::OwnerCount() == 47);
         {
             // Range insert() from a range of random access iterators
             static_deque<int,71> intList;
@@ -449,71 +435,72 @@ int main() {
             }
             static_deque<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
-            assert(SelfCount::Count() == 47*2);
+            assert(SelfCount::OwnerCount() == 47*2);
             r2.insert(r2.cbegin()+31, intList.cbegin(), intList.cend());
             assert(r2.size() == 47+9);
-            assert(SelfCount::Count() == 2*47+9);
+            assert(SelfCount::OwnerCount() == 2*47+9);
             assert(r2[30]() == 30);
             assert(r2[31+4]() == 4+173);
             assert(r2[31+9]() == 31);
         }
-        assert(SelfCount::Count() == 47);
+        assert(SelfCount::OwnerCount() == 47);
         {
             // Initializer list insert()
             static_deque<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
-            assert(SelfCount::Count() == 47*2);
+            assert(SelfCount::OwnerCount() == 47*2);
             using Z = SelfCount;
             r2.insert(r2.cbegin()+31, {Z(-72),Z(0),Z(274),Z(-34245)});
             assert(r2.size() == 47+4);
-            assert(SelfCount::Count() == 2*47+4);
+            assert(SelfCount::OwnerCount() == 2*47+4);
             assert(r2[30]() == 30);
             assert(r2[30+3]() == 274);
             assert(r2[31+4]() == 31);
         }
-        assert(SelfCount::Count() == 47);
+        assert(SelfCount::OwnerCount() == 47);
         {
             // Initializer list insert()
             static_deque<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
-            assert(SelfCount::Count() == 47*2);
+            assert(SelfCount::OwnerCount() == 47*2);
             using Z = SelfCount;
             r2.insert(r2.cbegin()+31, {Z(-72),Z(0),Z(274),Z(-34245)});
             assert(r2.size() == 47+4);
-            assert(SelfCount::Count() == 2*47+4);
+            assert(SelfCount::OwnerCount() == 2*47+4);
             assert(r2[30]() == 30);
             assert(r2[30+3]() == 274);
             assert(r2[31+4]() == 31);
         }
-        assert(SelfCount::Count() == 47);
+        assert(SelfCount::OwnerCount() == 47);
     }{
         // resize()
-        assert(SelfCount::Count() == 0);
+        assert(SelfCount::OwnerCount() == 0);
         static_deque<SelfCount, 99> v99;
         for (int i = 0; i < 73; ++i)
             v99.emplace_back(i);
         assert(v99.size() == 73);
-        assert(SelfCount::Count() == 73);
+        assert(SelfCount::OwnerCount() == 73);
         v99.resize(78,SelfCount(-823));
         assert(v99.size() == 78);
-        assert(SelfCount::Count() == 78);
+        assert(SelfCount::OwnerCount() == 78);
         assert(v99[72]() == 72);
         assert(v99[73]() == -823);
         assert(v99[77]() == -823);
         v99.resize(49);
         assert(v99.size() == 49);
-        assert(SelfCount::Count() == 49);
+        assert(SelfCount::OwnerCount() == 49);
         assert(v99[48]() == 48);
         v99.resize(56);
         assert(v99.size() == 56);
-        assert(SelfCount::Count() == 56);
+        assert(SelfCount::OwnerCount() == 56);
         assert(v99[55]() == 0);
     }{
         // Slide to back
-        static_deque<int,20> rc;
-        int j, j2 = 0;
+        static_deque<int,39> rc;
+        int j = 0; 
+        int j2 = 0;
         for (unsigned i = 0; i < 5; ++i) {
-            while (rc.size() < 39)
+            while (rc.size() < rc.capacity())
                 rc.push_front(j++);
             while (20 < rc.size()) {
                 assert(rc.back() == j2++);
@@ -526,10 +513,11 @@ int main() {
         }
     }{
         // Slide to front
-        static_deque<int,20> rc;
-        int j, j2 = 0;
+        static_deque<int,39> rc;
+        int j = 0; 
+        int j2 = 0;
         for (unsigned i = 0; i < 5; ++i) {
-            while (rc.size() < 39)
+            while (rc.size() < rc.capacity())
                 rc.emplace_back(j++);
             while (20 < rc.size()){
                 assert(rc.front() == j2++);
@@ -542,7 +530,7 @@ int main() {
         }
     }{
         // emplace() overflow prevention
-        static_deque<int,11> rc;
+        static_deque<int,18> rc;
         for (unsigned i = 0; i < 10; ++i)
             rc.push_back(i);
         for (unsigned i = 0; i < 8; ++i){
@@ -553,7 +541,7 @@ int main() {
         assert(rc[15] == 93);
     }{
         // swap() member
-        assert(SelfCount::Count() == 0);
+        assert(SelfCount::OwnerCount() == 0);
         static_deque<SelfCount, 99> va, vc;
         static_deque<SelfCount, 99> vb, vd;
         for (int i = 0; i < 57; ++i){
@@ -564,18 +552,18 @@ int main() {
         vd = vb;
         assert(va.size() == 57);
         assert(vb.size() == 19);
-        assert(SelfCount::Count() == 2*(19+57));
+        assert(SelfCount::OwnerCount() == 2*(19+57));
         assert(vc == va);
         assert(vd == vb);
         va.swap(vb);
         assert(vb.size() == 57);
         assert(va.size() == 19);
-        assert(SelfCount::Count() == 2*(19+57));
+        assert(SelfCount::OwnerCount() == 2*(19+57));
         assert(vd == va);
         assert(vc == vb);
     }{
         // swap() non-member overload
-        assert(SelfCount::Count() == 0);
+        assert(SelfCount::OwnerCount() == 0);
         static_deque<SelfCount, 99> va, vb, vc, vd;
         for (int i = 0; i < 57; ++i){
             va.emplace_back(i);
@@ -585,13 +573,13 @@ int main() {
         vd = vb;
         assert(va.size() == 57);
         assert(vb.size() == 19);
-        assert(SelfCount::Count() == 2*(19+57));
+        assert(SelfCount::OwnerCount() == 2*(19+57));
         assert(vc == va);
         assert(vd == vb);
         swap(va,vb);
         assert(vb.size() == 57);
         assert(va.size() == 19);
-        assert(SelfCount::Count() == 2*(19+57));
+        assert(SelfCount::OwnerCount() == 2*(19+57));
         assert(vd == va);
         assert(vc == vb);
     }{

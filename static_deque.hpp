@@ -5,10 +5,7 @@
 // using a fixed-size array.
 //
 // The first elements added to it are placed in the middle, and it can
-// expand in either direction. The capacity specified in its definition
-// is the capacity in either direction, so if its capacity is x and one
-// element has been added (either way), there is space for x-1 more
-// elements on either side of it.
+// expand in either direction. 
 //
 // Whenever a static_deque runs out of space on one end, it slides all
 // of the data to the other end. This can be costly and
@@ -18,7 +15,7 @@
 // exceptions:
 //      shrink_to_fit() does nothing.
 //      get_allocator() is not implemented.
-//      max_size() returns the maximum size, 2*Capacity-1.
+//      capacity() returns the maximum size.
 //      The function data() is added.  Like std::vector::data(), it
 //          returns a pointer to the front element.  The pointer it
 //          returns can be used like the iterator returned by begin().
@@ -89,7 +86,7 @@ namespace frystl
         static_deque(size_type count, const_reference value)
             : _begin(Centered(count)), _end(_begin + count)
         {
-            FRYSTL_ASSERT2(count <= _trueCap,"Overflow in static_deque");
+            FRYSTL_ASSERT2(count <= capacity(),"Overflow in static_deque");
             for (pointer p = _begin; p < _end; ++p)
                 new (p) value_type(value);
         }
@@ -122,7 +119,7 @@ namespace frystl
             : _begin(Centered(donor.size()))
             , _end(_begin)
         {
-            FRYSTL_ASSERT2(donor.size() <= _trueCap, "Too big");
+            FRYSTL_ASSERT2(donor.size() <= capacity(), "Too big");
             for (auto &m : donor)
                 emplace_back(m);
         }
@@ -143,7 +140,7 @@ namespace frystl
             : _begin(Centered(donor.size()))
             , _end(_begin)
         {
-            FRYSTL_ASSERT2(donor.size() <= _trueCap,"Overflow");
+            FRYSTL_ASSERT2(donor.size() <= capacity(),"Overflow");
             for (auto &m : donor)
                 emplace_back(std::move(m));
             donor.clear();
@@ -153,7 +150,7 @@ namespace frystl
             : _begin(Centered(il.size()))
             , _end(_begin)
         {
-            FRYSTL_ASSERT2(il.size() <= _trueCap,"Overflow");
+            FRYSTL_ASSERT2(il.size() <= capacity(),"Overflow");
             for (auto &value : il)
                 emplace_back(value);
         }
@@ -174,28 +171,28 @@ namespace frystl
         {
             return _begin == _end;
         }
-        size_type max_size() const noexcept
+        size_type capacity() const noexcept
         {
-            return 2*Capacity - 1;
+            return Capacity;
         }
         template <class... Args>
         void emplace_front(Args&&... args)
         {
-            FRYSTL_ASSERT2(size() < _trueCap,"static_deque overflow");
+            FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
             if (_begin == FirstSpace()) SlideAllToBack();
             Construct(_begin-1, std::forward<Args>(args)...);
             --_begin;
         }
         void push_front(const_reference t)
         {
-            FRYSTL_ASSERT2(size() < _trueCap,"static_deque overflow");
+            FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
             if (_begin == FirstSpace()) SlideAllToBack();
             Construct(_begin-1, t);
             --_begin;
         }
         void push_front(value_type&& t)
         {
-            FRYSTL_ASSERT2(size() < _trueCap,"static_deque overflow");
+            FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
             if (_begin == FirstSpace()) SlideAllToBack();
             Construct(_begin-1, std::move(t));
             --_begin;
@@ -209,21 +206,21 @@ namespace frystl
         template <class... Args>
         void emplace_back(Args&&... args)
         {
-            FRYSTL_ASSERT2(size() < _trueCap,"static_deque overflow");
+            FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
             if (_end == PastLastSpace()) SlideAllToFront();
             Construct(_end,std::forward<Args>(args)...);
             ++_end;
         }
         void push_back(const_reference t) noexcept
         {
-            FRYSTL_ASSERT2(size() < _trueCap,"static_deque overflow");
+            FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
             if (_end == PastLastSpace()) SlideAllToFront();
             Construct(_end, t);
             ++_end;
         }
         void push_back(value_type && t) noexcept
         {
-            FRYSTL_ASSERT2(size() < _trueCap,"static_deque overflow");
+            FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
             if (_end == PastLastSpace()) SlideAllToFront();
             Construct(_end, std::move(t));
             ++_end;
@@ -304,7 +301,7 @@ namespace frystl
         //  Assignment functions
         void assign(size_type n, const_reference val)
         {
-            FRYSTL_ASSERT2(n <= _trueCap,"Overflow in static_deque::assign()");
+            FRYSTL_ASSERT2(n <= capacity(),"Overflow in static_deque::assign()");
             DestroyAll(); 
             _begin = _end = Centered(n);
             while (size() < n)
@@ -312,7 +309,7 @@ namespace frystl
         }
         void assign(std::initializer_list<value_type> x)
         {
-            FRYSTL_ASSERT2(x.size() <= _trueCap,"Overflow in static_deque::assign()");
+            FRYSTL_ASSERT2(x.size() <= capacity(),"Overflow in static_deque::assign()");
             DestroyAll();
             _begin = _end = Centered(x.size());
             for (auto &a : x)
@@ -339,7 +336,7 @@ namespace frystl
         {
             if (this != &other)
             {
-                FRYSTL_ASSERT2(other.size() <= _trueCap,
+                FRYSTL_ASSERT2(other.size() <= capacity(),
                     "Overflow in assignment to static_deque");
                 DestroyAll();
                 _end = _begin = Centered(other.size());
@@ -450,7 +447,7 @@ namespace frystl
         }
         void resize(size_type n, const value_type &val)
         {
-            FRYSTL_ASSERT2(n <= _trueCap,"n too large in static_deque::resize(n,value)");
+            FRYSTL_ASSERT2(n <= capacity(),"n too large in static_deque::resize(n,value)");
             while (n < size())
                 pop_back();
             while (size() < n)
@@ -458,7 +455,7 @@ namespace frystl
         }
         void resize(size_type n)
         {
-            FRYSTL_ASSERT2(n <= _trueCap,"n too large in static_deque::resize(n)");
+            FRYSTL_ASSERT2(n <= capacity(),"n too large in static_deque::resize(n)");
             while (n < size())
                 pop_back();
             while (size() < n)
@@ -543,12 +540,11 @@ namespace frystl
         }
 
     private:
-        static constexpr unsigned _trueCap{2*Capacity -1};
         using storage_type =
             std::aligned_storage_t<sizeof(value_type), alignof(value_type)>;
         pointer _begin;
         pointer _end;
-        storage_type _elem[_trueCap];
+        storage_type _elem[Capacity];
 
         pointer FirstSpace() noexcept
         {
@@ -560,11 +556,11 @@ namespace frystl
         }
         pointer PastLastSpace() noexcept
         {
-            return reinterpret_cast<pointer>(_elem+_trueCap);
+            return reinterpret_cast<pointer>(_elem+capacity());
         }
         const_pointer PastLastSpace() const noexcept
         {
-            return reinterpret_cast<const_pointer>(_elem+_trueCap);
+            return reinterpret_cast<const_pointer>(_elem+capacity());
         }
         const_pointer Data() const noexcept
         {
@@ -605,7 +601,7 @@ namespace frystl
         // may be different from constp.
         iterator MakeRoom(const_iterator constp, size_type n)
         {
-            FRYSTL_ASSERT2(size()+n <= _trueCap, "static_deque overflow");
+            FRYSTL_ASSERT2(size()+n <= capacity(), "static_deque overflow");
             iterator p = const_cast<iterator>(constp);
             if (end()-p < p-begin() && end()+n <= PastLastSpace())
                 return MakeRoomAfter(p, n);
@@ -622,12 +618,12 @@ namespace frystl
         // in the space.
         constexpr pointer Centered(unsigned n) noexcept
         {
-            return FirstSpace()+Capacity-1-n/2;
+            return FirstSpace()+(Capacity-n)/2;
         }
         template <class RAIter>
         void Center(RAIter begin, RAIter end, std::random_access_iterator_tag)
         {
-            FRYSTL_ASSERT2(end-begin <= _trueCap, "Overflow");
+            FRYSTL_ASSERT2(end-begin <= capacity(), "Overflow");
             _begin = _end = Centered(end-begin);
         }
         template <class InpIter>
