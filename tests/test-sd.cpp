@@ -15,13 +15,11 @@ using namespace frystl;
 template <class C>
 static void TestFillInsert(C deq, unsigned iat, unsigned n)
 {
-    unsigned count0 = SelfCount::OwnerCount();
     unsigned ocount0 = SelfCount::OwnerCount();
     unsigned size = deq.size();
     auto spot = deq.cbegin() + iat;
     deq.insert(spot,n,SelfCount(843));
     assert(deq.size() == size+n);
-    assert(SelfCount::Count() == count0+n);
     assert(SelfCount::OwnerCount() == ocount0+n);
     if (iat > 0) assert(deq[iat-1]() == iat-1);
     assert(deq[iat]() == 843);
