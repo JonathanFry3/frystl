@@ -77,7 +77,7 @@ int main() {
             for (unsigned i = 0; i < 30; ++i) sd30.emplace_back(i-13);
             assert(SelfCount::OwnerCount() == 30);
             static_deque<SelfCount,73> i73 (std::move(sd30));
-            assert(sd30.size() == 30);
+            assert(sd30.size() == 0);
             assert(i73.size() == 30);
             assert(SelfCount::OwnerCount() == 30);
             for (int i = 0; i < 30; ++i) assert(i73[i]() == i-13);
@@ -85,7 +85,7 @@ int main() {
             // move to target of same capacity
             assert(SelfCount::OwnerCount() == 30);
             static_deque<SelfCount,73> j73 (std::move(i73));
-            assert(i73.size() == 30);
+            assert(i73.size() == 0);
             assert(j73.size() == 30);
             assert(SelfCount::OwnerCount() == 30);
             for (int i = 0; i < 30; ++i) assert(j73[i]() == i-13);
@@ -306,7 +306,7 @@ int main() {
         // move operator=()
         b = std::move(a);
         assert(b.size() == 20);
-        assert(SelfCount::Count() == 40);
+        assert(SelfCount::Count() == 20);
         assert(SelfCount::OwnerCount() == 20);
         assert(a != b);
 
@@ -410,8 +410,9 @@ int main() {
         TestFillInsert(roop,43,13);
         TestFillInsert(roop,roop.size(),13);
         static_deque<int,20> fi20;
+        int con {9};
         for (unsigned i = 0; i < 3; i++) {
-            fi20.push_front(9);
+            fi20.push_front(con);
             fi20.push_back(8);
         }
         fi20.insert(fi20.begin()+3,33,-3);

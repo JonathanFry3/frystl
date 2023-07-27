@@ -105,7 +105,7 @@ namespace frystl
             Center(begin,end,
                 typename std::iterator_traits<Iter>::iterator_category());
             for (Iter k = begin; k != end; ++k) {
-                push_back(*k);
+                emplace_back(*k);
             }
         }
         // copy constructors
@@ -129,14 +129,14 @@ namespace frystl
         // move constructors
         // Constructs the new static_deque by moving all the elements of
         // the existing static_deque.  It leaves the moved-from object
-        // unchanged, aside from whatever changes moving its elements
-        // made.
+        // empty.
         static_deque(this_type &&donor)
             : _begin(Centered(donor.size()))
             , _end(_begin)
         {
             for (auto &m : donor)
                 emplace_back(std::move(m));
+            donor.clear();
         }
         template <unsigned C1>
         static_deque(static_deque<value_type, C1> &&donor)
@@ -146,6 +146,7 @@ namespace frystl
             FRYSTL_ASSERT2(donor.size() <= _trueCap,"Overflow");
             for (auto &m : donor)
                 emplace_back(std::move(m));
+            donor.clear();
         }
         // initializer list constructor
         static_deque(std::initializer_list<value_type> il)
@@ -158,11 +159,11 @@ namespace frystl
         }
         ~static_deque() noexcept
         {
-            DestructAll();
+            DestroyAll();
         }
         void clear() noexcept
         {
-            DestructAll();
+            DestroyAll();
             _begin = _end = Centered(1);
         }
         size_type size() const noexcept
@@ -178,46 +179,60 @@ namespace frystl
             return 2*Capacity - 1;
         }
         template <class... Args>
-        void emplace_front(Args... args)
+        void emplace_front(Args&&... args)
         {
             FRYSTL_ASSERT2(size() < _trueCap,"static_deque overflow");
-            if (_begin == FirstSpace()) 
-                SlideAllToBack();
-            new (--_begin) value_type(args...);
+            if (_begin == FirstSpace()) SlideAllToBack();
+            Construct(_begin-1, std::forward<Args>(args)...);
+            --_begin;
         }
         void push_front(const_reference t)
         {
             FRYSTL_ASSERT2(size() < _trueCap,"static_deque overflow");
-            if (_begin == FirstSpace()) 
-                SlideAllToBack();
-            new (--_begin) value_type(t);
+            if (_begin == FirstSpace()) SlideAllToBack();
+            Construct(_begin-1, t);
+            --_begin;
+        }
+        void push_front(value_type&& t)
+        {
+            FRYSTL_ASSERT2(size() < _trueCap,"static_deque overflow");
+            if (_begin == FirstSpace()) SlideAllToBack();
+            Construct(_begin-1, std::move(t));
+            --_begin;
         }
         void pop_front()
         {
             FRYSTL_ASSERT2(_begin < _end, "pop_front called on empty static_deque");
             ++_begin;
-            (_begin - 1)->~value_type(); //destruct
+            Destroy(_begin-1);
         }
         template <class... Args>
-        void emplace_back(Args... args)
+        void emplace_back(Args&&... args)
         {
             FRYSTL_ASSERT2(size() < _trueCap,"static_deque overflow");
-            if (_end == PastLastSpace()) 
-                SlideAllToFront();
-            new (_end++) value_type(args...);
+            if (_end == PastLastSpace()) SlideAllToFront();
+            Construct(_end,std::forward<Args>(args)...);
+            ++_end;
         }
         void push_back(const_reference t) noexcept
         {
             FRYSTL_ASSERT2(size() < _trueCap,"static_deque overflow");
-            if (_end == PastLastSpace()) 
-                SlideAllToFront();
-            new (_end++) value_type(t);
+            if (_end == PastLastSpace()) SlideAllToFront();
+            Construct(_end, t);
+            ++_end;
+        }
+        void push_back(value_type && t) noexcept
+        {
+            FRYSTL_ASSERT2(size() < _trueCap,"static_deque overflow");
+            if (_end == PastLastSpace()) SlideAllToFront();
+            Construct(_end, std::move(t));
+            ++_end;
         }
         void pop_back() noexcept
         {
             FRYSTL_ASSERT2(_begin < _end,"pop_back() called on empty static_deque");
-            back().~value_type(); //destruct
             --_end;
+            Destroy(_end);
         }
 
         reference operator[](size_type index) noexcept
@@ -272,24 +287,25 @@ namespace frystl
             return *(_end-1);
         }
         template <class... Args>
-        iterator emplace(const_iterator pos, Args...args)
+        iterator emplace(const_iterator pos, Args && ... args)
         {
             FRYSTL_ASSERT2(cbegin() <= pos && pos <= cend(),
                 "Invalid position in static_deque::emplace()");
-            bool atEdge = pos==cbegin() || pos==cend();
-            iterator p = MakeRoom(pos,1);
-            if (atEdge)
-                new(p) value_type(args...);
-            else 
-                (*p) = std::move(value_type(args...));
-            return p;
+            unsigned offset = pos - cbegin();
+            if (pos == _begin) emplace_front(std::forward<Args>(args)...);
+            else if (pos == _end) emplace_back(std::forward<Args>(args)...);
+            else {
+                iterator p = MakeRoom(pos,1);
+                (*p) = value_type(std::forward<Args>(args)...);
+            }
+            return begin()+offset;
         }
         //
         //  Assignment functions
         void assign(size_type n, const_reference val)
         {
             FRYSTL_ASSERT2(n <= _trueCap,"Overflow in static_deque::assign()");
-            DestructAll(); 
+            DestroyAll(); 
             _begin = _end = Centered(n);
             while (size() < n)
                 push_back(val);
@@ -297,7 +313,7 @@ namespace frystl
         void assign(std::initializer_list<value_type> x)
         {
             FRYSTL_ASSERT2(x.size() <= _trueCap,"Overflow in static_deque::assign()");
-            DestructAll();
+            DestroyAll();
             _begin = _end = Centered(x.size());
             for (auto &a : x)
                 emplace_back(a);
@@ -306,7 +322,7 @@ namespace frystl
                   typename = RequireInputIter<Iter>>
         void assign(Iter begin, Iter end)
         {
-            DestructAll();
+            DestroyAll();
             Center(begin,end,
                 typename std::iterator_traits<Iter>::iterator_category());
             for (Iter k = begin; k != end; ++k) {
@@ -325,10 +341,11 @@ namespace frystl
             {
                 FRYSTL_ASSERT2(other.size() <= _trueCap,
                     "Overflow in assignment to static_deque");
-                DestructAll();
+                DestroyAll();
                 _end = _begin = Centered(other.size());
                 for (auto &o : other)
-                    new (_end++) value_type(std::move(o));
+                    Construct(_end++, std::move(o));
+                other.clear();
             }
             return *this;
         }
@@ -353,7 +370,7 @@ namespace frystl
             if (b <= t && t < e)
                 (*t) = std::move(val);
             else 
-                new(t) value_type(val);
+                Construct(t, std::move(val));
             return t;
         }
         // fill insert
@@ -505,7 +522,7 @@ namespace frystl
                 const iterator l = const_cast<iterator>(last);
                 unsigned nToErase = last-first;
                 for (iterator it = f; it < l; ++it)
-                    it->~value_type();
+                    Destroy(it);
                 if (first-_begin < _end-last) {
                     // Move the elements before first
                     std::move_backward(_begin,f,l);
@@ -628,10 +645,9 @@ namespace frystl
                 // fill unoccupied cell in place by constructon
                 new (pos) value_type(args...);
         }
-        void DestructAll() noexcept
+        void DestroyAll() noexcept
         {
-            for (reference elem : *this)
-                elem.~value_type(); // destruct all elements
+            for (reference elem : *this) Destroy(&elem);
         }
         void SlideAllToFront()
         {
