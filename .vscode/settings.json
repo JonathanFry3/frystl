@@ -67,7 +67,8 @@
         "ranges": "cpp",
         "scoped_allocator": "cpp",
         "stop_token": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "numbers": "cpp"
     },
     "terminal.explorerKind": "external",
     "terminal.integrated.automationShell.windows": "c:\\Program Files\\git\\bin\\bash.exe"
