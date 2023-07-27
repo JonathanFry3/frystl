@@ -40,6 +40,16 @@ namespace frystl {
     {
         return (num+denom-1)/denom;
     }
+    template <class value_type, class... Args>
+    void Construct(value_type* where, Args&&... args)
+    {
+        new ((void*)where) value_type(std::forward<Args>(args)...);
+    }
+    template <class value_type>
+    void Destroy(value_type * x)
+    {
+        x->~value_type();
+    }
 }
 
 #endif  // ndef FRYSTL_DEFINES_H
