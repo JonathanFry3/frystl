@@ -1,3 +1,7 @@
 test-mfv
 test-sd
 test-sv
+*.gcov
+*.gcda
+*.gcno
+
