@@ -450,8 +450,8 @@ namespace frystl
         {
             FRYSTL_ASSERT2(_size,"mf_vector::pop_back() on empty vector");
             iterator e = end() - 1;
-            Destroy(&back());
             _size -= 1;
+            Destroy(e.operator->());
             if (e._first == e._current)
                 Shrink();
         }
