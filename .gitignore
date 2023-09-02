@@ -4,4 +4,7 @@ test-sv
 *.gcov
 *.gcda
 *.gcno
-
+*.exe
+*.ilk
+*.pdb
+*.obj

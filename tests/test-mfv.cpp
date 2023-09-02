@@ -27,7 +27,7 @@ static void TestFillInsert(C vec, unsigned iat, unsigned n)
     {
         if (i < iat) assert((*pCell)() == i);
         else if (iat+n <= i) assert((*pCell)() == i-n);
-        else (*pCell)() == 843;
+        else assert((*pCell)() == 843);
     }
 }
 
