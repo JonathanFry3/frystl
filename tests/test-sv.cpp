@@ -223,7 +223,8 @@ int main() {
         assert(SelfCount::OwnerCount() == di50.size());
         assert(SelfCount::Count() == di50.size());
 
-        assert(di50.erase(di50.end()-7, di50.end()) == di50.end());
+        auto td = di50.erase(di50.end()-7, di50.end());
+        assert(td == di50.end());
         assert(di50.size() == 20);
         assert(di50.back() == 23);
         assert(SelfCount::OwnerCount() == di50.size());

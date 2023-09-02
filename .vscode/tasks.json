@@ -128,6 +128,30 @@
 				"kind": "build",
 				"isDefault": true
 			}
+		},
+		{
+			"type": "shell",
+			"label": "C/C++: cl.exe build test-sv",
+			"command": "cl.exe",
+			"args": [
+				"-Zi",			// debug information format
+				"-EHsc",		// Exception handling options
+				"-I","${workspaceFolder}",
+				"-Fe:",			// name EXE file
+				"tests/test-sv.exe",
+				"tests/test-sv.cpp",
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
 		}
+
     ]
 }
