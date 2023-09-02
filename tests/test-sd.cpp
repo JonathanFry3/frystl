@@ -209,7 +209,8 @@ int main() {
             assert(copy.size() == base_count-6);
             assert(SelfCount::OwnerCount() == base_count+copy.size());
 
-            assert(copy.erase(copy.cend()-7, copy.cend()) == copy.end());
+            auto te = copy.erase(copy.cend()-7, copy.cend());
+            assert(te == copy.end());
             assert(copy.size() == base_count - 13);
             assert(copy.back() == 23);
             assert(SelfCount::OwnerCount() == base_count+copy.size());
@@ -217,7 +218,8 @@ int main() {
 
         // erase()
         assert(di50.size() == 31);
-        assert(di50.erase(di50.cbegin()+8) == di50.cbegin()+8);
+        auto tp = di50.erase(di50.cbegin()+8);
+        assert(tp == di50.cbegin()+8);
 
         assert(SelfCount::OwnerCount() == di50.size());
         assert(di50.size() == 30);

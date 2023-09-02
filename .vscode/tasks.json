@@ -105,6 +105,29 @@
 				"kind": "build",
 				"isDefault": true
 			}
+		},
+		{
+			"type": "shell",
+			"label": "C/C++: cl.exe build test-sd",
+			"command": "cl.exe",
+			"args": [
+				"-Zi",			// debug information format
+				"-EHsc",		// Exception handling options
+				"-I","${workspaceFolder}",
+				"-Fe:",			// name EXE file
+				"tests/test-sd.exe",
+				"tests/test-sd.cpp",
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
 		}
     ]
 }
