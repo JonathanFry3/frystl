@@ -538,19 +538,16 @@ namespace frystl
             for (InputIterator k = begin; k != end; ++k)
                 push_back(*k);
         }
-        mf_vector& operator=(const mf_vector& other) noexcept
+        mf_vector& operator=(const mf_vector& other) 
         {
-            if (this != &other)
-                assign(other.begin(), other.end());
+            mf_vector tmp(other);
+            swap(tmp);
             return *this;
         }
         mf_vector& operator=(mf_vector&& other) noexcept
         {
-            if (this != &other)
-            {
-                clear();
-                swap(other);
-            }
+            clear();
+            swap(other);
             return *this;
         }
         template <unsigned B, size_t N>
@@ -559,15 +556,16 @@ namespace frystl
             mf_vector* pOther = reinterpret_cast<mf_vector*>(&other);
             if (this != pOther)
             {
-                clear();
                 if (block_size() == pOther->block_size()) {
+                    clear();
                     swap(*pOther);
                 }
                 else {
+                    mf_vector tmp;
                     for (auto& val : other) {
-                        push_back(std::move(val));
+                        tmp.emplace_back(std::move(val));
                     }
-                    other.clear();
+                    swap(tmp);
                 }
             }
             return *this;
@@ -695,7 +693,7 @@ namespace frystl
         {
             return const_reverse_iterator(cbegin());
         }
-        void swap(mf_vector& other)
+        void swap(mf_vector& other) noexcept
         {
             std::swap(_blocks, other._blocks);
             std::swap(_size, other._size);
