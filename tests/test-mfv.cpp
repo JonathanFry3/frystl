@@ -189,7 +189,7 @@ int main() {
 
         // erase()
         assert(di7.size() == 31);
-        assert(di7.begin()+3 == di7.erase(di7.begin()+3,di7.begin()+3));
+        assert(di7.begin()+3 == di7.erase(di7.cbegin()+3,di7.cbegin()+3));
         assert(di7.size() == 31);
 
         assert(di7.erase(di7.begin()+8) == di7.begin()+8);
