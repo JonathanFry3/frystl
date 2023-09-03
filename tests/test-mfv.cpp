@@ -189,8 +189,10 @@ int main() {
 
         // erase()
         assert(di7.size() == 31);
-        assert(di7.erase(di7.begin()+8) == di7.begin()+8);
+        assert(di7.begin()+3 == di7.erase(di7.begin()+3,di7.begin()+3));
+        assert(di7.size() == 31);
 
+        assert(di7.erase(di7.begin()+8) == di7.begin()+8);
         assert(SelfCount::OwnerCount() == di7.size());
         assert(di7.size() == 30);
         assert(di7[7]() == 7);

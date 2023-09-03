@@ -366,7 +366,7 @@ namespace frystl
                 push_back(value);
         }
         // Move constructors
-        mf_vector(mf_vector&& other)
+        mf_vector(mf_vector&& other) noexcept
             : mf_vector()
         {
             swap(other);
@@ -498,17 +498,15 @@ namespace frystl
         }
         iterator erase(const_iterator first, const_iterator last) noexcept
         {
-            iterator f = MakeIterator(first);
             // Requires: begin()<=first && first<=last && last<=end()
-            if (first < last)
-            {
-                iterator l = MakeIterator(last);
-                for (iterator it = f; it < l; ++it)
-                    Destroy(it._current);
-                std::move(l, end(), f);
-                _size -= last - first;
-                Shrink();
-            }
+            FRYSTL_ASSERT2(first <= last, "bad args to mf_vector::erase");
+            iterator f = MakeIterator(first);
+            iterator l = MakeIterator(last);
+            for (iterator it = f; it < l; ++it)
+                Destroy(it._current);
+            std::move(l, end(), f);
+            _size -= last - first;
+            Shrink();
             return f;
         }
         iterator erase(const_iterator position) noexcept
@@ -546,6 +544,7 @@ namespace frystl
         }
         mf_vector& operator=(mf_vector&& other) noexcept
         {
+            if (this == &other) return *this;
             clear();
             swap(other);
             return *this;
