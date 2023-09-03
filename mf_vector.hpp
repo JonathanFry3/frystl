@@ -6,7 +6,7 @@
 // That std::vector is initially allocated at size N.  This storage scheme
 // is similar to that used by std::deque.
 //
-// It's functions have the same semantics as those of std::vector with the
+// Its functions have the same semantics as those of std::vector with the
 // following exceptions:
 //
 //  (1) shrink_to_fit(), data(), max_size(), and get_allocator(), 
@@ -115,8 +115,9 @@ namespace frystl
 /***********************************************************************************/    
 /***********************************************************************************/    
     template <class T, bool IsConst>
-        struct MFV_Iterator: std::random_access_iterator_tag
-        {
+    class MFV_Iterator: std::random_access_iterator_tag
+    {
+    public:
         using iterator_category = std::random_access_iterator_tag;
         using value_type        = T;
         using difference_type   = std::ptrdiff_t;
@@ -133,7 +134,7 @@ namespace frystl
 
         MFV_Iterator() = delete;
 
-        MFV_Iterator(pointer* block, pointer first, pointer last, pointer current)
+        MFV_Iterator(pointer* block, pointer first, pointer last, pointer current) noexcept
         : _block(block), _first(first), _last(last), _current(current)
         {}
 
@@ -251,38 +252,38 @@ namespace frystl
 
     template <class T, bool C1, bool C2>
     bool operator!=(const MFV_Iterator<T, C1>& a,
-                    const MFV_Iterator<T, C2>& b)
+                    const MFV_Iterator<T, C2>& b) noexcept
     {
         return !(a == b);
     }
     template <class T, bool C1, bool C2>
     bool operator> (const MFV_Iterator<T, C1>& a,
-                    const MFV_Iterator<T, C2>& b)
+                    const MFV_Iterator<T, C2>& b) noexcept
     {
         return b < a;
     }
     template <class T, bool C1, bool C2>
     bool operator<=(const MFV_Iterator<T, C1>& a,
-                    const MFV_Iterator<T, C2>& b)
+                    const MFV_Iterator<T, C2>& b) noexcept
     {
         return !(b < a);
     }
     template <class T, bool C1, bool C2>
     bool operator>=(const MFV_Iterator<T, C1>& a,
-                    const MFV_Iterator<T, C2>& b)
+                    const MFV_Iterator<T, C2>& b) noexcept
     {
         return !(a < b);
     }
     template <class T, bool C>
     typename MFV_Iterator<T, C>::difference_type
-    operator-(const MFV_Iterator<T, C>& a, const MFV_Iterator<T, C>& b)
+    operator-(const MFV_Iterator<T, C>& a, const MFV_Iterator<T, C>& b) noexcept
     { 
         return (a._block - b._block - 1) * (a._last - a._first)
             + (a._current - a._first) + (b._last - b._current);
     }
     template <class T, bool C1, bool C2>
     typename MFV_Iterator<T, C1>::difference_type
-    operator-(const MFV_Iterator<T, C1>& a, const MFV_Iterator<T, C2>& b)
+    operator-(const MFV_Iterator<T, C1>& a, const MFV_Iterator<T, C2>& b) noexcept
     {
         return (a._block - b._block - 1) * (a._last - a._first)
             + (a._current - a._first) + (b._last - b._current);
@@ -550,7 +551,7 @@ namespace frystl
             return *this;
         }
         template <unsigned B, size_t N>
-        mf_vector& operator=(mf_vector<T, B, N>&& other) noexcept
+        mf_vector& operator=(mf_vector<T, B, N>&& other) 
         {
             mf_vector* pOther = reinterpret_cast<mf_vector*>(&other);
             if (this != pOther)
@@ -796,39 +797,39 @@ namespace frystl
     //*******  Non-member overloads
     //
     template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
-    bool operator==(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs)
+    bool operator==(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs) noexcept
     {
         if (lhs.size() != rhs.size())
             return false;
         return std::equal(lhs.begin(), lhs.end(), rhs.begin());
     }
     template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
-    bool operator!=(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs)
+    bool operator!=(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs) noexcept
     {
         return !(rhs == lhs);
     }
     template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
-    bool operator<(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs)
+    bool operator<(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs) noexcept
     {
         return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
     }
     template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
-    bool operator<=(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs)
+    bool operator<=(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs) noexcept
     {
         return !(rhs < lhs);
     }
     template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
-    bool operator>(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs)
+    bool operator>(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs) noexcept
     {
         return rhs < lhs;
     }
     template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
-    bool operator>=(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs)
+    bool operator>=(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs) noexcept
     {
         return !(lhs < rhs);
     }
     template <class T, unsigned BS, size_t NB0, size_t NB1>
-    void swap(mf_vector<T, BS, NB0>& a, mf_vector<T, BS, NB1>& b)
+    void swap(mf_vector<T, BS, NB0>& a, mf_vector<T, BS, NB1>& b) noexcept
     {
         a.swap(b);
     }
