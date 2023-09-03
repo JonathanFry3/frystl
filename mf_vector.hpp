@@ -608,8 +608,7 @@ namespace frystl
                     push_back(*first++);
                 }
             } catch (...){
-                _size = oldSize;
-                Shrink();
+                while (oldSize < _size) pop_back();
                 throw;
             }
             std::rotate(begin()+posIndex, begin()+oldSize, end());
