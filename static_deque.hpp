@@ -336,12 +336,9 @@ namespace frystl
         {
             if (this != &other)
             {
-                FRYSTL_ASSERT2(other.size() <= capacity(),
-                    "Overflow in assignment to static_deque");
-                DestroyAll();
-                _end = _begin = Centered(other.size());
+                clear();
                 for (auto &o : other)
-                    Construct(_end++, std::move(o));
+                    push_back(std::move(o));
                 other.clear();
             }
             return *this;
@@ -461,7 +458,7 @@ namespace frystl
             while (size() < n)
                 emplace_back();
         }
-        void swap(this_type &x)
+        void swap(this_type &x) noexcept
         {
             std::swap(*this, x);
         }
@@ -507,7 +504,7 @@ namespace frystl
         {
             return const_reverse_iterator(_begin);
         }
-        iterator erase(const_iterator first, const_iterator last)
+        iterator erase(const_iterator first, const_iterator last) noexcept
         {
             iterator result = const_cast<iterator>(last);
             if (first != last)
