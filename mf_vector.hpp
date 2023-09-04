@@ -128,20 +128,18 @@ namespace frystl
         using ValPtr            = T*;
         using BlkPtr            = ValPtr*;
         BlkPtr _block;
-        ValPtr _first;
         ValPtr _current; 
 
         MFV_Iterator() = delete;
 
-        MFV_Iterator(pointer* block, pointer first, pointer current) noexcept
-        : _block(block), _first(first),  _current(current)
+        MFV_Iterator(pointer* block, pointer current) noexcept
+        : _block(block), _current(current)
         {}
 
         // Implicit conversion from iterator to const_iterator
         template <bool WasConst, class = std::enable_if_t<IsConst && !WasConst> >
         MFV_Iterator(const MFV_Iterator<T, BlockSize, WasConst>& x) noexcept
             : _block(x._block)
-            , _first(x._first)
             , _current(x._current)
         {}
 
@@ -149,7 +147,7 @@ namespace frystl
 
         const ValPtr Last() const noexcept
         {
-            return _first + BlockSize;
+            return *_block + BlockSize;
         }
 
         MFV_Iterator& operator++() noexcept  // prefix increment, as in ++iter
@@ -185,7 +183,7 @@ namespace frystl
         }
         MFV_Iterator operator+=(difference_type a) noexcept
         {
-            const difference_type offset = a + (_current - _first);
+            const difference_type offset = a + (_current - *_block);
             if (0 <= offset && offset < BlockSize)
                 _current += a;
             else {
@@ -193,8 +191,7 @@ namespace frystl
                     (offset > 0) ? offset / BlockSize
                                  : (1 + offset - BlockSize) / BlockSize;
                 _block += nodeOffset;
-                _first = *_block;
-                _current = _first + (offset - nodeOffset * BlockSize);
+                _current = *_block + (offset - nodeOffset * BlockSize);
             }
             return *this;
         }
@@ -232,15 +229,14 @@ namespace frystl
             _current++;
             if (Last() == _current) {
                 ++_block;
-                _current = _first = *_block;
+                _current = *_block;
             }
         }
         void Decrement()
         {
-            if (_first == _current) {
+            if (*_block == _current) {
                 --_block;
-                _first = *_block;
-                _current =  _first + BlockSize;
+                _current =  *_block + BlockSize;
             }
             --_current;
         }
@@ -277,14 +273,14 @@ namespace frystl
     operator-(const MFV_Iterator<T, B, C>& a, const MFV_Iterator<T, B, C>& b) noexcept
     { 
         return (a._block - b._block - 1) * B
-            + (a._current - a._first) + (b.Last() - b._current);
+            + (a._current - *a._block) + (b.Last() - b._current);
     }
     template <class T, unsigned B, bool C1, bool C2>
     typename MFV_Iterator<T, B, C1>::difference_type
     operator-(const MFV_Iterator<T, B, C1>& a, const MFV_Iterator<T, B, C2>& b) noexcept
     {
         return (a._block - b._block - 1) * B
-            + (a._current - a._first) + (b.Last() - b._current);
+            + (a._current - *a._block + (b.Last() - b._current));
     }
 
 /***********************************************************************************/    
@@ -451,7 +447,7 @@ namespace frystl
             iterator e = end() - 1;
             _size -= 1;
             Destroy(e.operator->());
-            if (e._first == e._current)
+            if (*e._block == e._current)
                 Shrink();
         }
         reference back() noexcept
@@ -769,7 +765,7 @@ namespace frystl
         {
             // MFV_Iterator(pointer* block, pointer first, pointer last, pointer current)
             pointer* b = const_cast<pointer*>(_blocks.data());
-            return iterator(b, *b, *b);
+            return iterator(b, *b);
         }
         iterator End() const noexcept
         {
@@ -784,7 +780,6 @@ namespace frystl
         {
             return iterator(
                 const_cast<pointer*>(ci._block), 
-                const_cast<pointer>(ci._first),
                 const_cast<pointer>(ci._current));
         }
     }; // template class mf_vector
