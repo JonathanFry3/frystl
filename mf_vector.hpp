@@ -463,12 +463,12 @@ namespace frystl
         reference front() noexcept
         {
             FRYSTL_ASSERT2(_size,"mf_vector::front() on empty vector");
-            return **_blocks.data();
+            return *_blocks.front();
         }
         const_reference front() const noexcept
         {
             FRYSTL_ASSERT2(_size,"mf_vector::front() on empty vector");
-            return **_blocks.data();
+            return *_blocks.front();
         }
 
         reference at(size_type index)
@@ -501,6 +501,7 @@ namespace frystl
                 Destroy(it._current);
             std::move(l, end(), f);
             _size -= last - first;
+
             Shrink();
             return f;
         }
@@ -713,11 +714,11 @@ namespace frystl
         void Grow(size_type newSize)
         {
             try {
+                auto final = _blocks.back();
                 while ((_blocks.size() - 1) * _blockSize < newSize)
                 {
-                    pointer b = reinterpret_cast<pointer>(new storage_type[_blockSize]);
-                    _blocks.push_back(_blocks.back());
-                    *(_blocks.end() - 2) = b;
+                    _blocks.back() = reinterpret_cast<pointer>(new storage_type[_blockSize]);
+                    _blocks.push_back(final);
                 }
             }
             catch (...) {
@@ -764,7 +765,7 @@ namespace frystl
         iterator Begin() const noexcept
         {
             // MFV_Iterator(pointer* block, pointer first, pointer last, pointer current)
-            pointer* b = const_cast<pointer*>(_blocks.data());
+            auto b = const_cast<pointer*>(_blocks.data());
             return iterator(b, *b);
         }
         iterator End() const noexcept
