@@ -189,7 +189,7 @@ namespace frystl
             if (0 <= offset && offset < BlockSize)
                 _current += a;
             else {
-                const long nodeOffset = 
+                const difference_type nodeOffset = 
                     (offset > 0) ? offset / BlockSize
                                  : (1 + offset - BlockSize) / BlockSize;
                 _block += nodeOffset;
@@ -773,8 +773,7 @@ namespace frystl
         }
         iterator End() const noexcept
         {
-            pointer* e = const_cast<pointer*>(_blocks.data() + _size / BlockSize);
-            return iterator(e, *e, *e + _size % BlockSize);
+            return Begin()+_size;
         }
         static void Verify(bool cond)
         {
