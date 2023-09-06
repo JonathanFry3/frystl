@@ -132,165 +132,165 @@ namespace frystl
 /**********************  Iterator Implementation  **********************************/    
 /***********************************************************************************/    
 /***********************************************************************************/    
-    template <bool IsConst>
-    class MFV_Iterator: std::random_access_iterator_tag
-    {
-    public:
-        using iterator_category = std::random_access_iterator_tag;
-        using value_type        = T;
-        using difference_type   = std::ptrdiff_t;
-        using pointer           = typename std::conditional<IsConst,const T*,T*>::type;
-        using reference         = typename std::conditional<IsConst,const T&,T&>::type;
-    private:
-        using this_type         = MFV_Iterator<IsConst>;
-        using const_this_type   = MFV_Iterator<true>;
-        using ValPtr            = T*;
-        using BlkPtr            = ValPtr*;
+        template <bool IsConst>
+        class MFV_Iterator: std::random_access_iterator_tag
+        {
+        public:
+            using iterator_category = std::random_access_iterator_tag;
+            using value_type        = T;
+            using difference_type   = std::ptrdiff_t;
+            using pointer           = typename std::conditional<IsConst,const T*,T*>::type;
+            using reference         = typename std::conditional<IsConst,const T&,T&>::type;
+        private:
+            using this_type         = MFV_Iterator<IsConst>;
+            using const_this_type   = MFV_Iterator<true>;
+            using ValPtr            = T*;
+            using BlkPtr            = ValPtr*;
 
-        BlkPtr _block;
-        ValPtr _current; 
-        friend class MFV_Iterator<!IsConst>;
-        friend class mf_vector;
-    public:
-        MFV_Iterator() = delete;
+            BlkPtr _block;      // -> an in the _blocks vector that points to a block of elements
+            ValPtr _current;    // -> the current element
+            friend class MFV_Iterator<!IsConst>;
+            friend class mf_vector;
+        public:
+            MFV_Iterator() = delete;
 
-        MFV_Iterator(pointer* block, pointer current) noexcept
-        : _block(block), _current(current)
-        {}
+            MFV_Iterator(pointer* block, pointer current) noexcept
+            : _block(block), _current(current)
+            {}
 
-        // Implicit conversion from iterator to const_iterator
-        template <bool WasConst, class = std::enable_if_t<IsConst && !WasConst> >
-        MFV_Iterator(const MFV_Iterator<WasConst>& x) noexcept
-            : _block(x._block)
-            , _current(x._current)
-        {}
+            // Implicit conversion from iterator to const_iterator
+            template <bool WasConst, class = std::enable_if_t<IsConst && !WasConst> >
+            MFV_Iterator(const MFV_Iterator<WasConst>& x) noexcept
+                : _block(x._block)
+                , _current(x._current)
+            {}
 
-        MFV_Iterator(const MFV_Iterator& x) noexcept = default;
-        MFV_Iterator& operator++() noexcept  // prefix increment, as in ++iter
-        {
-            Increment();
-            return *this;
-        }
-        MFV_Iterator operator++(int i) noexcept  // postfix increment, as in iter++
-        {
-            MFV_Iterator result = *this;
-            Increment();
-            return result;
-        }
-        MFV_Iterator& operator--() noexcept  // prefix decrement, as in --iter;
-        {
-            Decrement();
-            return *this;
-        }
-        MFV_Iterator operator--(int i) noexcept // postfix decrement, as in iter--;
-        { 
-            MFV_Iterator result = *this;
-            Decrement();
-            return result;
-        }
-        bool operator==(const_this_type other) const noexcept
-        {
-            return _current == other._current;
-        }
-        bool operator!=(const_this_type other) const noexcept
-        {
-            return !operator==(other);
-        }
-        bool operator<(const_this_type other) const noexcept
-        {
-            return _block < other._block || 
-                (_block == other._block && _current < other._current);
-        }
-        bool operator>(const_this_type other) const noexcept
-        {
-            return other < *this;
-        }
-        bool operator<=(const_this_type other) const noexcept
-        {
-            return !(other < *this);
-        }
-        bool operator>=(const_this_type other) const noexcept
-        {
-            return !(*this < other);
-        }
-        MFV_Iterator operator+=(difference_type a) noexcept
-        {
-            const difference_type offset = a + (_current - First());
-            if (0 <= offset && offset < BlockSize)
-                _current += a;
-            else {
-                const difference_type nodeOffset = 
-                    (offset > 0) ? offset / BlockSize
-                                 : (1 + offset - BlockSize) / BlockSize;
-                _block += nodeOffset;
-                _current = First() + (offset - nodeOffset * BlockSize);
+            MFV_Iterator(const MFV_Iterator& x) noexcept = default;
+            MFV_Iterator& operator++() noexcept  // prefix increment, as in ++iter
+            {
+                Increment();
+                return *this;
             }
-            return *this;
-        }
-        MFV_Iterator operator-=(difference_type a) noexcept
-        {
-            return operator+=(-a);
-        }
-        MFV_Iterator operator+(difference_type a) const noexcept
-        {
-            MFV_Iterator t{ *this };
-            return t += a;
-        }
-        MFV_Iterator operator-(difference_type a) const noexcept
-        {
-            MFV_Iterator t{ *this };
-            return t += (-a);
-        }
-        difference_type operator-(const_this_type b) const noexcept
-        {
-            return (_block - b._block - 1) * BlockSize
-                + (_current - First()) + (b.Last() - b._current);
-        }
-        difference_type operator-(const_this_type b) noexcept
-        {
-            return (_block - b._block - 1) * BlockSize
-                + (_current - First()) + (b.Last() - b._current);
-        }
-        reference operator*() const noexcept 
-        {
-            return *_current;
-        }
-        pointer operator->() const noexcept 
-        {
-            return _current;
-        }
-        reference operator[](difference_type x) 
-        {
-            return *(*this + x);
-        }
+            MFV_Iterator operator++(int i) noexcept  // postfix increment, as in iter++
+            {
+                MFV_Iterator result = *this;
+                Increment();
+                return result;
+            }
+            MFV_Iterator& operator--() noexcept  // prefix decrement, as in --iter;
+            {
+                Decrement();
+                return *this;
+            }
+            MFV_Iterator operator--(int i) noexcept // postfix decrement, as in iter--;
+            { 
+                MFV_Iterator result = *this;
+                Decrement();
+                return result;
+            }
+            bool operator==(const_this_type other) const noexcept
+            {
+                return _current == other._current;
+            }
+            bool operator!=(const_this_type other) const noexcept
+            {
+                return !operator==(other);
+            }
+            bool operator<(const_this_type other) const noexcept
+            {
+                return _block < other._block || 
+                    (_block == other._block && _current < other._current);
+            }
+            bool operator>(const_this_type other) const noexcept
+            {
+                return other < *this;
+            }
+            bool operator<=(const_this_type other) const noexcept
+            {
+                return !(other < *this);
+            }
+            bool operator>=(const_this_type other) const noexcept
+            {
+                return !(*this < other);
+            }
+            MFV_Iterator operator+=(difference_type a) noexcept
+            {
+                const difference_type offset = a + (_current - First());
+                if (0 <= offset && offset < BlockSize)
+                    _current += a;
+                else {
+                    const difference_type nodeOffset = 
+                        (offset > 0) ? offset / BlockSize
+                                    : (1 + offset - BlockSize) / BlockSize;
+                    _block += nodeOffset;
+                    _current = First() + (offset - nodeOffset * BlockSize);
+                }
+                return *this;
+            }
+            MFV_Iterator operator-=(difference_type a) noexcept
+            {
+                return operator+=(-a);
+            }
+            MFV_Iterator operator+(difference_type a) const noexcept
+            {
+                MFV_Iterator t{ *this };
+                return t += a;
+            }
+            MFV_Iterator operator-(difference_type a) const noexcept
+            {
+                MFV_Iterator t{ *this };
+                return t += (-a);
+            }
+            difference_type operator-(const_this_type b) const noexcept
+            {
+                return (_block - b._block - 1) * BlockSize
+                    + (_current - First()) + (b.Last() - b._current);
+            }
+            difference_type operator-(const_this_type b) noexcept
+            {
+                return (_block - b._block - 1) * BlockSize
+                    + (_current - First()) + (b.Last() - b._current);
+            }
+            reference operator*() const noexcept 
+            {
+                return *_current;
+            }
+            pointer operator->() const noexcept 
+            {
+                return _current;
+            }
+            reference operator[](difference_type x) 
+            {
+                return *(*this + x);
+            }
 
 
-    private:
-        const ValPtr First() const noexcept
-        {
-            return *_block;
-        }
-        const ValPtr Last() const noexcept
-        {
-            return First() + BlockSize;
-        }
-        void Increment()
-        {
-            _current++;
-            if (Last() == _current) {
-                ++_block;
-                _current = First();
+        private:
+            const ValPtr First() const noexcept
+            {
+                return *_block;
             }
-        }
-        void Decrement()
-        {
-            if (First() == _current) {
-                --_block;
-                _current =  First() + BlockSize;
+            const ValPtr Last() const noexcept
+            {
+                return First() + BlockSize;
             }
-            --_current;
-        }
-    };
+            void Increment()
+            {
+                _current++;
+                if (Last() == _current) {
+                    ++_block;
+                    _current = First();
+                }
+            }
+            void Decrement()
+            {
+                if (First() == _current) {
+                    --_block;
+                    _current =  First() + BlockSize;
+                }
+                --_current;
+            }
+        };
 
 /***********************************************************************************/    
 /***********************************************************************************/    
