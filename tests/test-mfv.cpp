@@ -251,9 +251,12 @@ int main() {
         assert(*i1 == 1);
         assert(i1[3] == 4);
 
-        It i2(vec.end());
+        auto i2(vec.end());
         assert(i2-i1 == 7);
         assert(i2>i1);
+        assert(i1<i2);
+        assert(i1<=i2);
+        assert(i2>=i1);
     }{
         // assign()
         // fill type
