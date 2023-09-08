@@ -109,186 +109,6 @@ SOFTWARE.
 
 namespace frystl
 {
-/***********************************************************************************/    
-/***********************************************************************************/    
-/**********************  Iterator Implementation  **********************************/    
-/***********************************************************************************/    
-/***********************************************************************************/    
-    template <class T, unsigned BlockSize, bool IsConst>
-    class MFV_Iterator: std::random_access_iterator_tag
-    {
-    public:
-        using iterator_category = std::random_access_iterator_tag;
-        using value_type        = T;
-        using difference_type   = std::ptrdiff_t;
-        using pointer           = typename std::conditional<IsConst,const T*,T*>::type;
-        using reference         = typename std::conditional<IsConst,const T&,T&>::type;
-        using this_type         = MFV_Iterator<T, BlockSize, IsConst>;
-
-        using ValPtr            = T*;
-        using BlkPtr            = ValPtr*;
-        BlkPtr _block;
-        ValPtr _current; 
-
-        MFV_Iterator() = delete;
-
-        MFV_Iterator(pointer* block, pointer current) noexcept
-        : _block(block), _current(current)
-        {}
-
-        // Implicit conversion from iterator to const_iterator
-        template <bool WasConst, class = std::enable_if_t<IsConst && !WasConst> >
-        MFV_Iterator(const MFV_Iterator<T, BlockSize, WasConst>& x) noexcept
-            : _block(x._block)
-            , _current(x._current)
-        {}
-
-        MFV_Iterator(const MFV_Iterator& x) noexcept = default;
-
-        const ValPtr Last() const noexcept
-        {
-            return *_block + BlockSize;
-        }
-
-        MFV_Iterator& operator++() noexcept  // prefix increment, as in ++iter
-        {
-            Increment();
-            return *this;
-        }
-        MFV_Iterator operator++(int i) noexcept  // postfix increment, as in iter++
-        {
-            MFV_Iterator result = *this;
-            Increment();
-            return result;
-        }
-        MFV_Iterator& operator--() noexcept  // prefix decrement, as in --iter;
-        {
-            Decrement();
-            return *this;
-        }
-        MFV_Iterator operator--(int i) noexcept // postfix decrement, as in iter--;
-        { 
-            MFV_Iterator result = *this;
-            Decrement();
-            return result;
-        }
-        bool operator==(const MFV_Iterator& other) const noexcept
-        {
-            return _current == other._current;
-        }
-        bool operator<(const MFV_Iterator& other) const noexcept
-        {
-            return _block < other._block || 
-                (_block == other._block && _current < other._current);
-        }
-        MFV_Iterator operator+=(difference_type a) noexcept
-        {
-            const difference_type offset = a + (_current - *_block);
-            if (0 <= offset && offset < BlockSize)
-                _current += a;
-            else {
-                const difference_type nodeOffset = 
-                    (offset > 0) ? offset / BlockSize
-                                 : (1 + offset - BlockSize) / BlockSize;
-                _block += nodeOffset;
-                _current = *_block + (offset - nodeOffset * BlockSize);
-            }
-            return *this;
-        }
-        MFV_Iterator operator-=(difference_type a) noexcept
-        {
-            return operator+=(-a);
-        }
-        MFV_Iterator operator+(difference_type a) const noexcept
-        {
-            MFV_Iterator t{ *this };
-            return t += a;
-        }
-        MFV_Iterator operator-(difference_type a) const noexcept
-        {
-            MFV_Iterator t{ *this };
-            return t += (-a);
-        }
-        reference operator*() const noexcept 
-        {
-            return *_current;
-        }
-        pointer operator->() const noexcept 
-        {
-            return _current;
-        }
-        reference operator[](difference_type x) 
-        {
-            return *(*this + x);
-        }
-
-
-    private:
-        void Increment()
-        {
-            _current++;
-            if (Last() == _current) {
-                ++_block;
-                _current = *_block;
-            }
-        }
-        void Decrement()
-        {
-            if (*_block == _current) {
-                --_block;
-                _current =  *_block + BlockSize;
-            }
-            --_current;
-        }
-    };
-
-    // Non-member overrides for iterator operands
-
-    template <class T, unsigned B, bool C1, bool C2>
-    bool operator!=(const MFV_Iterator<T, B, C1>& a,
-                    const MFV_Iterator<T, B, C2>& b) noexcept
-    {
-        return !(a == b);
-    }
-    template <class T, unsigned B, bool C1, bool C2>
-    bool operator>(const MFV_Iterator<T, B, C1>& a,
-                    const MFV_Iterator<T, B, C2>& b) noexcept
-    {
-        return b < a;
-    }
-    template <class T, unsigned B, bool C1, bool C2>
-    bool operator<=(const MFV_Iterator<T, B, C1>& a,
-                    const MFV_Iterator<T, B, C2>& b) noexcept
-    {
-        return !(b < a);
-    }
-    template <class T, unsigned B, bool C1, bool C2>
-    bool operator>=(const MFV_Iterator<T, B, C1>& a,
-                    const MFV_Iterator<T, B, C2>& b) noexcept
-    {
-        return !(a < b);
-    }
-    template <class T, unsigned B, bool C>
-    typename MFV_Iterator<T, B, C>::difference_type
-    operator-(const MFV_Iterator<T, B, C>& a, const MFV_Iterator<T, B, C>& b) noexcept
-    { 
-        return (a._block - b._block - 1) * B
-            + (a._current - *a._block) + (b.Last() - b._current);
-    }
-    template <class T, unsigned B, bool C1, bool C2>
-    typename MFV_Iterator<T, B, C1>::difference_type
-    operator-(const MFV_Iterator<T, B, C1>& a, const MFV_Iterator<T, B, C2>& b) noexcept
-    {
-        return (a._block - b._block - 1) * B
-            + (a._current - *a._block + (b.Last() - b._current));
-    }
-
-/***********************************************************************************/    
-/***********************************************************************************/    
-/**********************  mf_vector Implementation  *********************************/    
-/***********************************************************************************/    
-/***********************************************************************************/    
-
 
     // A dummy to give the final pointer in any mf_vector a valid
     // data address to use.
@@ -306,6 +126,179 @@ namespace frystl
     class mf_vector
     {
     public:
+
+/***********************************************************************************/    
+/***********************************************************************************/    
+/**********************  Iterator Implementation  **********************************/    
+/***********************************************************************************/    
+/***********************************************************************************/    
+        template <bool IsConst>
+        class MFV_Iterator: std::random_access_iterator_tag
+        {
+        public:
+            using iterator_category = std::random_access_iterator_tag;
+            using value_type        = T;
+            using difference_type   = std::ptrdiff_t;
+            using pointer           = typename std::conditional<IsConst,const T*,T*>::type;
+            using reference         = typename std::conditional<IsConst,const T&,T&>::type;
+        private:
+            using this_type         = MFV_Iterator<IsConst>;
+            using const_this_type   = MFV_Iterator<true>;
+            using ValPtr            = T*;
+            using BlkPtr            = ValPtr*;
+
+            BlkPtr _block;      // -> an in the _blocks vector that points to a block of elements
+            ValPtr _current;    // -> the current element
+            friend class MFV_Iterator<!IsConst>;
+            friend class mf_vector;
+        public:
+            MFV_Iterator() = delete;
+
+            MFV_Iterator(pointer* block, pointer current) noexcept
+            : _block(block), _current(current)
+            {}
+
+            // Implicit conversion from iterator to const_iterator
+            template <bool WasConst, class = std::enable_if_t<IsConst && !WasConst> >
+            MFV_Iterator(const MFV_Iterator<WasConst>& x) noexcept
+                : _block(x._block)
+                , _current(x._current)
+            {}
+
+            MFV_Iterator(const MFV_Iterator& x) noexcept = default;
+            MFV_Iterator& operator++() noexcept  // prefix increment, as in ++iter
+            {
+                Increment();
+                return *this;
+            }
+            MFV_Iterator operator++(int i) noexcept  // postfix increment, as in iter++
+            {
+                MFV_Iterator result = *this;
+                Increment();
+                return result;
+            }
+            MFV_Iterator& operator--() noexcept  // prefix decrement, as in --iter;
+            {
+                Decrement();
+                return *this;
+            }
+            MFV_Iterator operator--(int i) noexcept // postfix decrement, as in iter--;
+            { 
+                MFV_Iterator result = *this;
+                Decrement();
+                return result;
+            }
+            bool operator==(const_this_type other) const noexcept
+            {
+                return _current == other._current;
+            }
+            bool operator!=(const_this_type other) const noexcept
+            {
+                return !operator==(other);
+            }
+            bool operator<(const_this_type other) const noexcept
+            {
+                return _block < other._block || 
+                    (_block == other._block && _current < other._current);
+            }
+            bool operator>(const_this_type other) const noexcept
+            {
+                return other < *this;
+            }
+            bool operator<=(const_this_type other) const noexcept
+            {
+                return !(other < *this);
+            }
+            bool operator>=(const_this_type other) const noexcept
+            {
+                return !(*this < other);
+            }
+            MFV_Iterator operator+=(difference_type a) noexcept
+            {
+                const difference_type offset = a + (_current - First());
+                if (0 <= offset && offset < BlockSize)
+                    _current += a;
+                else {
+                    const difference_type nodeOffset = 
+                        (offset > 0) ? offset / BlockSize
+                                    : (1 + offset - BlockSize) / BlockSize;
+                    _block += nodeOffset;
+                    _current = First() + (offset - nodeOffset * BlockSize);
+                }
+                return *this;
+            }
+            MFV_Iterator operator-=(difference_type a) noexcept
+            {
+                return operator+=(-a);
+            }
+            MFV_Iterator operator+(difference_type a) const noexcept
+            {
+                MFV_Iterator t{ *this };
+                return t += a;
+            }
+            MFV_Iterator operator-(difference_type a) const noexcept
+            {
+                MFV_Iterator t{ *this };
+                return t += (-a);
+            }
+            difference_type operator-(const_this_type b) const noexcept
+            {
+                return (_block - b._block - 1) * BlockSize
+                    + (_current - First()) + (b.Last() - b._current);
+            }
+            difference_type operator-(const_this_type b) noexcept
+            {
+                return (_block - b._block - 1) * BlockSize
+                    + (_current - First()) + (b.Last() - b._current);
+            }
+            reference operator*() const noexcept 
+            {
+                return *_current;
+            }
+            pointer operator->() const noexcept 
+            {
+                return _current;
+            }
+            reference operator[](difference_type x) 
+            {
+                return *(*this + x);
+            }
+
+
+        private:
+            const ValPtr First() const noexcept
+            {
+                return *_block;
+            }
+            const ValPtr Last() const noexcept
+            {
+                return First() + BlockSize;
+            }
+            void Increment()
+            {
+                _current++;
+                if (Last() == _current) {
+                    ++_block;
+                    _current = First();
+                }
+            }
+            void Decrement()
+            {
+                if (First() == _current) {
+                    --_block;
+                    _current =  First() + BlockSize;
+                }
+                --_current;
+            }
+        };
+
+/***********************************************************************************/    
+/***********************************************************************************/    
+/**********************  mf_vector Implementation  *********************************/    
+/***********************************************************************************/    
+/***********************************************************************************/    
+
+
         using value_type        = T;
         using reference         = T&;
         using pointer           = T*;
@@ -314,8 +307,8 @@ namespace frystl
         using size_type         = size_t;
         using this_type         = mf_vector;
 
-        using iterator                  = MFV_Iterator<T, BlockSize, false>;
-        using const_iterator            = MFV_Iterator<T, BlockSize, true>;
+        using iterator                  = MFV_Iterator<false>;
+        using const_iterator            = MFV_Iterator<true>;
         using reverse_iterator          = std::reverse_iterator<iterator>;
         using const_reverse_iterator    = std::reverse_iterator<const_iterator>;
 
@@ -494,7 +487,7 @@ namespace frystl
         iterator erase(const_iterator first, const_iterator last) noexcept
         {
             // Requires: begin()<=first && first<=last && last<=end()
-            FRYSTL_ASSERT2(first <= last, "bad args to mf_vector::erase");
+            FRYSTL_ASSERT2(!(last < first), "bad args to mf_vector::erase");
             iterator f = MakeIterator(first);
             iterator l = MakeIterator(last);
             for (iterator it = f; it < l; ++it)
