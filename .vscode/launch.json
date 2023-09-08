@@ -44,6 +44,19 @@
             "showDisplayString": true
         },
 		{
+			"name": "(Windows) Launch test-mfv",
+            "type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/test-mfv",
+			"args": [],
+			"stopAtEntry": true,
+			"cwd": "${workspaceFolder}",
+			"environment": [],
+			"externalConsole": false,
+            "visualizerFile": "${workspaceFolder}/frystl.natvis",
+            "showDisplayString": true
+        },
+		{
 			"name": "(gdb) Launch test-mfv",
             "type": "cppdbg",
 			"request": "launch",
