@@ -297,7 +297,7 @@ namespace frystl
             else if (pos == _end) emplace_back(std::forward<Args>(args)...);
             else {
                 iterator p = MakeRoom(pos,1);
-                (*p) = value_type(std::forward<Args>(args)...);
+                Construct(p,std::forward<Args>(args)...);
             }
             return begin()+offset;
         }
