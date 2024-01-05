@@ -58,6 +58,7 @@ SOFTWARE.
 #include <algorithm> // std::move...(), equal(), lexicographical_compare()
 #include <initializer_list>
 #include <stdexcept> // for std::out_of_range
+#include <cstdint>   // uint32_t etc.
 #include "frystl-defines.hpp"
 
 namespace frystl
