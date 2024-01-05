@@ -30,6 +30,7 @@
                 "-g",
                 "tests/test-sd.cpp",
 				"-I", "${workspaceFolder}",
+				"-std=c++17",
             //    "-fprofile-arcs","-ftest-coverage",  // generate gcov coverage analysis data
                 "-o","${workspaceFolder}/test-sd",
 				"-Wno-placement-new"						// g++ 9.0 bug
@@ -50,6 +51,7 @@
             "command": "g++",
             "args": [
                 "-g",
+				"-std=c++17",
                 "tests/test-mfv.cpp",
 				"-I", "${workspaceFolder}",
             //    "-fprofile-arcs","-ftest-coverage",  // generate gcov coverage analysis data
@@ -72,6 +74,7 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
+				"-std=c++17",
                 "${file}",
                 "-o", "${fileDirname}/${fileBasenameNoExtension}"
             ],
@@ -90,6 +93,7 @@
 			"command": "cl.exe",
 			"args": [
 				"-Zi",			// debug information format
+				"-std:c++17",
 				"-EHsc",		// Exception handling options
 				"-I","${workspaceFolder}",
 				"-Fe:",			// name EXE file
@@ -114,6 +118,7 @@
 			"args": [
 				"-Zi",			// debug information format
 				"-EHsc",		// Exception handling options
+				"-std:c++17",
 				"-I","${workspaceFolder}",
 				"-Fe:",			// name EXE file
 				"tests/test-sd.exe",
@@ -137,6 +142,7 @@
 			"args": [
 				"-Zi",			// debug information format
 				"-EHsc",		// Exception handling options
+				"-std:c++17",
 				"-I","${workspaceFolder}",
 				"-Fe:",			// name EXE file
 				"tests/test-sv.exe",

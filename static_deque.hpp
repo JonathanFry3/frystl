@@ -178,12 +178,13 @@ namespace frystl
             return Capacity;
         }
         template <class... Args>
-        void emplace_front(Args&&... args)
+        [[maybe_unused]] reference emplace_front(Args&&... args)
         {
             FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
             if (_begin == FirstSpace()) SlideAllToBack();
             Construct(_begin-1, std::forward<Args>(args)...);
             --_begin;
+            return *_begin;
         }
         void push_front(const_reference t)
         {
@@ -206,12 +207,13 @@ namespace frystl
             Destroy(_begin-1);
         }
         template <class... Args>
-        void emplace_back(Args&&... args)
+        [[maybe_unused]] reference emplace_back(Args&&... args)
         {
             FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
             if (_end == PastLastSpace()) SlideAllToFront();
             Construct(_end,std::forward<Args>(args)...);
             ++_end;
+            return *(_end-1);
         }
         void push_back(const_reference t) 
         {

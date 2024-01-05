@@ -408,12 +408,13 @@ namespace frystl
             return size() == 0;
         }
         template <class... Args>
-        void emplace_back(Args&&... args)
+        [[maybe_unused]] reference emplace_back(Args&&... args)
         {
             Grow(_size + 1);
             iterator e = End();
             Construct(e.operator->(), std::forward<Args>(args)...);
             ++_size;
+            return *e;
         }
         template <class... Args>
         iterator emplace(const_iterator position, Args&&... args)
