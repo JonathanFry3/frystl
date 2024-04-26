@@ -112,7 +112,7 @@ int main() {
 
         // emplace_back(), size()
         for (unsigned i = 0; i < 50; i+= 1){
-            di50.emplace_back(i);
+            assert(di50.emplace_back(i)() == i);
             assert(di50.size() == i+1);
             assert(SelfCount::OwnerCount() == di50.size());
             assert(SelfCount::Count() == di50.size());

@@ -301,11 +301,12 @@ namespace frystl
             return p;
         }
         template <class... Args>
-        void emplace_back(Args && ... args)
+        [[maybe_unused]] reference emplace_back(Args && ... args)
         {
             FRYSTL_ASSERT2(_size < Capacity,"static_vector::emplace_back() overflow");
             Construct(end(), std::forward<Args>(args)...);
             ++_size;
+            return back();
         }
         // single element insert()
         iterator insert(const_iterator position, const value_type &val)
