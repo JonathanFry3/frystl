@@ -87,7 +87,7 @@ private:
     }
     void Disown()
     {
-        IncrOwnerCount(-_owns); 
+        IncrOwnerCount(-short(_owns)); 
         _owns = false;
         assert(ownerCount >= 0);
     }
