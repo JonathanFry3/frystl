@@ -1,20 +1,23 @@
 {
+    "enableConfigurationSquiggles": true,
     "configurations": [
         {
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**"
+                , "~/inc"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu11",
-            "cppStandard": "gnu++17",
-            "intelliSenseMode": "gcc-x64"
+            "cppStandard": "c++20",
+            "configurationProvider": "ms-vscode.cmake-tools"
         },
         {
-            "name": "Win32", 
+            "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**"
+                ,"C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.39.33519/include"
             ],
             "defines": [
                 "_DEBUG",
@@ -22,10 +25,9 @@
                 "_UNICODE"
             ],
             "windowsSdkVersion": "10.0.18362.0",
-            "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Preview/VC/Tools/MSVC/14.28.29331/bin/Hostx64/x64/cl.exe",
+            "compilerPath": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.39.33519/bin/Hostx64/x64/cl.exe",
             "cStandard": "c11",
-            "cppStandard": "c++17",
-            "intelliSenseMode": "msvc-x64"
+            "cppStandard": "c++20"
         }
     ],
     "version": 4

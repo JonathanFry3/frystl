@@ -92,6 +92,7 @@
 			"command": "cl.exe",
 			"args": [
 				"-Zi",			// debug information format
+				"-DFRYSTL_DEBUG",
 				"-std:c++17",
 				"-EHsc",		// Exception handling options
 				"-I","${workspaceFolder}",
@@ -117,6 +118,7 @@
 			"args": [
 				"-Zi",			// debug information format
 				"-EHsc",		// Exception handling options
+				"-DFRYSTL_DEBUG",
 				"-std:c++17",
 				"-I","${workspaceFolder}",
 				"-Fe:",			// name EXE file
@@ -141,6 +143,7 @@
 			"args": [
 				"-Zi",			// debug information format
 				"-EHsc",		// Exception handling options
+				"-DFRYSTL_DEBUG",
 				"-std:c++17",
 				"-I","${workspaceFolder}",
 				"-Fe:",			// name EXE file
