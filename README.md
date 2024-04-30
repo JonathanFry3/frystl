@@ -34,6 +34,6 @@ that of an STL vector because it uses two levels of index. It has no *data()* me
 An mf_vector offers another advantage. It is stable with respect to *push_back()* or *emplace_back()* 
 calls.  That is, pointers
 and references are still valid after such a call. 
-It also means that up to a predefined size, which can easily be made *very* large, read access 
+It also means that up to a predefined size, which can easily be made arbitrarily large, read access 
 is safe in a multi-threaded program as long as the only changes being made are new elements added
-at the back.
+at the back. In that circustance, iterators (except *end()*) also remain valid.
