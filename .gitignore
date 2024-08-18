@@ -8,3 +8,9 @@ test-sv
 *.ilk
 *.pdb
 *.obj
+build
+Makefile
+cmake-saga.md
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake

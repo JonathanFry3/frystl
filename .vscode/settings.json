@@ -71,5 +71,6 @@
         "numbers": "cpp"
     },
     "terminal.explorerKind": "external",
-    "terminal.integrated.automationShell.windows": "c:\\Program Files\\git\\bin\\bash.exe"
+    "terminal.integrated.automationShell.windows": "c:\\Program Files\\git\\bin\\bash.exe",
+    "cmake.cmakePath": "cmake"
 }
