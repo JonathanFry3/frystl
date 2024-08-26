@@ -1,0 +1,49 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cmake",
+			"label": "CMake: build all",
+			"command": "build",
+			"targets": [
+				"all"
+			],
+			"group": "build",
+			"problemMatcher": [],
+			"detail": "CMake template build task"
+		}
+		,{
+			"type": "cmake",
+			"label": "CMake: build test-sv",
+			"command": "build",
+			"targets": [
+				"test-sv"
+			],
+			"group": "build",
+			"problemMatcher": [],
+			"detail": "CMake template build task"
+		}
+		,{
+			"type": "cmake",
+			"label": "CMake: build test-sv",
+			"command": "build",
+			"targets": [
+				"test-sv"
+			],
+			"group": "build",
+			"problemMatcher": [],
+			"detail": "CMake template build task"
+		}
+		,{
+			"type": "cmake",
+			"label": "CMake: build test-mfv",
+			"command": "build",
+			"targets": [
+				"test-mfv"
+			],
+			"group": "build",
+			"problemMatcher": [],
+			"detail": "CMake template build task"
+		}
+	]
+}
