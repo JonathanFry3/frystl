@@ -14,10 +14,10 @@
 		}
 		,{
 			"type": "cmake",
-			"label": "CMake: build test-sv",
+			"label": "CMake: build test-sd",
 			"command": "build",
 			"targets": [
-				"test-sv"
+				"test-sd"
 			],
 			"group": "build",
 			"problemMatcher": [],

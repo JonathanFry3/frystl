@@ -62,6 +62,14 @@ int main() {
             assert(i23.capacity() == 16*3);
             assert(i23.size() == 17);
             for (int k:i23) assert(k==-6);
+ 
+            struct NoCopy {
+                int _a;
+                NoCopy() = default;
+                NoCopy(const NoCopy& b) = delete;
+            };
+            mf_vector<NoCopy, 10> nc(7);
+            assert (nc.size() == 7);
         }
         // range
         assert(SelfCount::OwnerCount() == 0);

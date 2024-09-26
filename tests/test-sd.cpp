@@ -42,6 +42,14 @@ int main() {
             static_deque<int,23> i23(17, -6);
             assert(i23.size() == 17);
             for (int k:i23) assert(k==-6);
+
+            struct NoCopy {
+                int _a;
+                NoCopy() = default;
+                NoCopy(const NoCopy& b) = delete;
+            };
+            static_deque<NoCopy, 10> nc(7);
+            assert (nc.size() == 7);
         }
         {
             // range
