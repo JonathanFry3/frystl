@@ -392,6 +392,27 @@ int main() {
             assert(roop[47]() == 46);
             roop.erase(spot);
         }
+        {
+            // Test insert at the ends
+            assert(roop.back()() == roop.size()-1);
+            auto left = roop.front();
+            auto sz = roop.size();
+            roop.erase(roop.cbegin());
+            assert(roop[0]() == 1);
+            roop.insert(roop.cbegin(), left);
+            assert(roop[0]() == 0);
+            assert(roop[1]() == 1);
+            assert(roop.size() == sz);
+
+            auto right = roop.back();
+            roop.erase(roop.end()-1);
+            assert(roop.size() == sz-1);
+            assert(roop.back()() == roop.size()-1);
+            roop.insert(roop.end(), right);
+            assert(roop.size() == sz);
+            assert(roop.back() == right);
+            assert((*(roop.end()-2))() == sz-2);
+        }
 
         // Fill insert()
         assert(roop.size() == 47);
