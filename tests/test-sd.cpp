@@ -28,6 +28,8 @@ static void TestFillInsert(C deq, unsigned iat, unsigned n)
         assert(deq[iat+n]() == iat);
         assert(deq[size+n-1]()== size-1);
     }
+    for (unsigned i = 0; i < deq.size(); ++i) 
+        assert(deq[i].Owns());
 }
 int main() {
 
@@ -403,6 +405,9 @@ int main() {
         TestFillInsert(roop,19,13);
         TestFillInsert(roop,43,13);
         TestFillInsert(roop,roop.size(),13);
+        roop.resize(47);
+        assert(SelfCount::OwnerCount() == 47);
+        
         static_deque<int,41> fi41;
         int con {9};
         for (unsigned i = 0; i < 3; i++) {
@@ -424,6 +429,7 @@ int main() {
             for (int i = 0; i < 9; ++i) {
                 intList.push_back(i+173);
             }
+            assert(SelfCount::OwnerCount() == 47);
             static_deque<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
             assert(SelfCount::OwnerCount() == 47*2);

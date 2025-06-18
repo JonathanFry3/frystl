@@ -25,6 +25,7 @@ static void TestFillInsert(C vec, unsigned iat, unsigned n)
     auto pCell = vec.begin();
     for (unsigned i = 0; i < vec.size(); ++i, ++pCell)
     {
+        assert(pCell->Owns());
         if (i < iat) assert((*pCell)() == i);
         else if (iat+n <= i) assert((*pCell)() == i-n);
         else assert((*pCell)() == 843);
